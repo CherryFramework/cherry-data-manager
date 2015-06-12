@@ -5,7 +5,7 @@
  * @license   GPL-2.0+
  *
  * @wordpress-plugin
- * Plugin Name:       Cherry Content Manager
+ * Plugin Name:       Cherry Data Manager
  * Plugin URI:        http://www.cherryframework.com/
  * Description:       Import/export site content, uploads, widgets and some options
  * Version:           1.0.0
