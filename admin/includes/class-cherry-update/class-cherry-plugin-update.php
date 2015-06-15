@@ -2,7 +2,7 @@
 /**
  * Class for the update plugins.
  *
- * @package    Cherry_Bace_Update
+ * @package    Cherry_Base_Update
  * @subpackage Plugins_Update
  * @author     Cherry Team <support@cherryframework.com>
  * @copyright  Copyright (c) 2012 - 2015, Cherry Team
@@ -18,11 +18,11 @@ if ( !defined( 'WPINC' ) ) {
 if( !class_exists( 'Cherry_Plugin_Update' ) ) {
 	require( 'class-cherry-base-update.php' );
 
-	class Cherry_Plugin_Update extends Cherry_Bace_Update {
+	class Cherry_Plugin_Update extends Cherry_Base_Update {
 
 		public function init( $attr = array() ){
 			if( @constant ( 'CHERRY_UPDATE' ) !== false ){
-				$this -> bace_init( $attr );
+				$this -> base_init( $attr );
 
 				//Need for test update
 				//set_site_transient('update_plugins', null);
@@ -37,6 +37,8 @@ if( !class_exists( 'Cherry_Plugin_Update' ) ) {
 
 			if( $new_update[ 'version' ] ){
 				$this -> api[ 'plugin' ] = $this -> api[ 'slug' ] . '/' . $this -> api[ 'slug' ] . '.php';
+
+				$update = new stdClass();
 
 				$update -> slug = $this -> api[ 'slug' ];
 				$update -> plugin = $this -> api[ 'plugin' ];
