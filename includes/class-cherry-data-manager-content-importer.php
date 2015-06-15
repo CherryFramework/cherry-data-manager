@@ -56,7 +56,7 @@ class cherry_dm_content_importer {
 		 */
 		$this->cherry_key = apply_filters( 'cherry_data_manager_import_key', $this->cherry_key );
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'prepare_js' ), 15 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'prepare_js' ), 99 );
 
 		add_action( 'wp_ajax_cherry_dm_content_handle_load', array( $this, 'process_handle_upload' ), 10 );
 		add_action( 'wp_ajax_cherry_dm_content_auto_load', array( $this, 'process_auto_upload' ) );

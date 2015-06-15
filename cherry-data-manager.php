@@ -249,7 +249,7 @@ if ( !class_exists('cherry_data_manager') ) {
 			}
 
 			// include updater
-			require_once( CHERRY_DATA_MANAGER_DIR . 'includes/updater/class-cherry-plugin-update.php' );
+			require_once( CHERRY_DATA_MANAGER_DIR . 'admin/includes/class-cherry-update/class-cherry-plugin-update.php' );
 
 		}
 
