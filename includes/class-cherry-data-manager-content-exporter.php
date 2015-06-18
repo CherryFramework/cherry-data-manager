@@ -77,6 +77,8 @@ class cherry_dm_content_exporter {
 				'page_on_front',
 				'page_for_posts',
 				'cherry-options',
+				$theme . '_statics',
+				$theme . '_statics_defaults',
 				$theme_opt,
 				$theme_opt_defaults
 			)

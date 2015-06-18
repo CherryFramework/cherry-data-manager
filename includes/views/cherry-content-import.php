@@ -103,7 +103,7 @@ global $cherry_data_manager;
 								<a class="button-default_" href="<?php echo home_url(); ?>">
 									<?php _e( 'View your site', $cherry_data_manager->slug ); ?>
 								</a>
-								<a class="button-primary_" href="<?php echo menu_page_url( 'cherry-options', false ); ?>" target="_parent">
+								<a class="button-primary_" href="<?php echo menu_page_url( 'options', false ); ?>" target="_parent">
 									<?php _e( 'Go to Cherry Options', $cherry_data_manager->slug ); ?>
 								</a>
 							</div>

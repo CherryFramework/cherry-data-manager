@@ -580,8 +580,8 @@ class cherry_data_manager_content_installer {
 			$original_post_ID = $post['post_id'];
 			$postdata = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
-			//ini_set('max_execution_time', 300);
-			set_time_limit(3);
+			ini_set('max_execution_time', 300);
+			set_time_limit(0);
 
 			$comment_post_ID = $post_id = wp_insert_post( $postdata, true );
 			do_action( 'wp_import_insert_post', $post_id, $original_post_ID, $postdata, $post );
@@ -847,7 +847,7 @@ class cherry_data_manager_content_installer {
 					$value = maybe_unserialize( $meta['value'] );
 				}
 
-				//ini_set('max_execution_time', -1);
+				ini_set('max_execution_time', 300);
 				set_time_limit(0);
 
 				add_post_meta( $new_post_id, $key, $value );
@@ -1040,8 +1040,8 @@ class cherry_data_manager_content_installer {
 		$metadata = $_SESSION['attachment_metapost'];
 
 		foreach ($metadata as $key => $value) {
-			//ini_set('max_execution_time', -1);
-			set_time_limit(10);
+			ini_set('max_execution_time', -1);
+			set_time_limit(0);
 			$_SESSION['attachment_metapost'][$key]['file'] = wp_generate_attachment_metadata($value['post_id'], $value['file']);
 		}
 
@@ -1067,8 +1067,8 @@ class cherry_data_manager_content_installer {
 
 		$generate_metadata = $_SESSION['attachment_metapost'];
 		foreach ($generate_metadata as $key => $value) {
-			//ini_set('max_execution_time', -1);
-			set_time_limit(10);
+			ini_set('max_execution_time', -1);
+			set_time_limit(0);
 			wp_update_attachment_metadata($value['post_id'], $value['file']);
 		}
 
