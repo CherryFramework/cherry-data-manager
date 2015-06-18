@@ -104,6 +104,9 @@ if ( !class_exists('cherry_data_manager') ) {
 			);
 
 			if ( $this->is_manager_page( $this->import_page ) ) {
+
+				wp_deregister_script('heartbeat');
+
 				wp_enqueue_script(
 					$this->slug . '-importer',
 					CHERRY_DATA_MANAGER_URI . 'assets/js/importer.js',
