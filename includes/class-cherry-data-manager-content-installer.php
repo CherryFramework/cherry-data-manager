@@ -1005,10 +1005,6 @@ class cherry_data_manager_content_installer {
 
 			$file_url = $upload_dir . basename( $remote_url );
 
-			if ( ! $this->is_image_url( $file_url ) ) {
-				continue;
-			}
-
 			if ( file_exists( $file_url ) ) {
 				$this->add_attachment( $postdata, $remote_url, $upload_dir );
 			}
@@ -1023,24 +1019,6 @@ class cherry_data_manager_content_installer {
 
 		exit('generate_attachment_metadata');
 
-	}
-
-	/**
-	 * Check if provided URL is image
-	 *
-	 * @param  string  $url maybe image URL
-	 * @return boolean
-	 */
-	function is_image_url( $url ) {
-
-		$img_formats = array( "png", "jpg", "jpeg" );
-		$path_info   = pathinfo( $url );
-
-		if ( in_array( strtolower( $path_info['extension'] ), $img_formats ) ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
