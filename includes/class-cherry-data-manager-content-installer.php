@@ -159,7 +159,6 @@ class cherry_data_manager_content_installer {
 		$theme = get_option( 'stylesheet' );
 
 		$patterns = array(
-			'/theme_mods_.+/',
 			'/theme\d+/',
 			'/theme\d+_defaults/',
 			'/theme\d+_statics/',
@@ -167,7 +166,6 @@ class cherry_data_manager_content_installer {
 		);
 
 		$replace = array(
-			'theme_mods_' . $theme,
 			$theme,
 			$theme . '_defaults',
 			$theme . '_statics',
@@ -176,6 +174,11 @@ class cherry_data_manager_content_installer {
 
 		foreach ( $options as $option_name => $option_val ) {
 			$option_name = preg_replace( $patterns, $replace, $option_name );
+
+			if ( 'cherry-options' == $option_name ) {
+				$option_val['id'] = $theme;
+			}
+
 			update_option( $option_name, $option_val );
 		}
 
@@ -1267,6 +1270,11 @@ class cherry_data_manager_content_installer {
 
 		if ( isset($_POST['file']) && $_POST['file'] ) {
 			$widgets_file = $_POST['file'];
+		}
+
+		if ( class_exists( 'Cherry_Options_Framework' ) ) {
+			$options_framework = Cherry_Options_Framework::get_instance();
+			$options_framework->restore_default_settings_array();
 		}
 
 		$upload_dir = cherry_dm_get_upload_path();
