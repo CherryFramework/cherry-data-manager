@@ -156,7 +156,26 @@ class cherry_data_manager_content_installer {
 			exit( 'import_custom_tables' );
 		}
 
+		$theme = get_option( 'stylesheet' );
+
+		$patterns = array(
+			'/theme_mods_.+/',
+			'/theme\d+/',
+			'/theme\d+_defaults/',
+			'/theme\d+_statics/',
+			'/theme\d+_statics_defaults/',
+		);
+
+		$replace = array(
+			'theme_mods_' . $theme,
+			$theme,
+			$theme . '_defaults',
+			$theme . '_statics',
+			$theme  . '_statics_defaults',
+		);
+
 		foreach ( $options as $option_name => $option_val ) {
+			$option_name = preg_replace( $patterns, $replace, $option_name );
 			update_option( $option_name, $option_val );
 		}
 
@@ -1338,7 +1357,7 @@ class cherry_data_manager_content_installer {
 
 			foreach ( $widget_value as $widget_key => $widget_value ) {
 				// fix for nav_menu widget
-				if ( $widget_title == 'nav_menu' ) {
+				if ( 'nav_menu' == $widget_title ) {
 					if (is_array($widget_data[$widget_title][$widget_key])) {
 						if ( array_key_exists('nav_menu_slug', $widget_data[$widget_title][$widget_key]) ) {
 							$nav_menu_slug = $widget_data[$widget_title][$widget_key]['nav_menu_slug'];
@@ -1350,7 +1369,9 @@ class cherry_data_manager_content_installer {
 							}
 						}
 					}
-				}
+				} /*elseif ( 'cherry-shortcodes' == $widget_title ) {
+					content
+				}*/
 			}
 		}
 
