@@ -1352,6 +1352,10 @@ class cherry_data_manager_content_installer {
 		$this->import_end();
 	}
 
+	function test_c( $matches ) {
+		var_dump( $matches );
+	}
+
 	/**
 	 * Import widgets and set necessary settings
 	 *
@@ -1385,12 +1389,13 @@ class cherry_data_manager_content_installer {
 		$json = file_get_contents( $upload_dir . $widgets_file );
 
 		$upload_dir = wp_upload_dir();
-		$upload_dir = $upload_dir['url'];
-		$cut_upload_dir = substr($upload_dir, strpos($upload_dir, 'wp-content/uploads'), strlen($upload_dir)-1);
-		$cut_upload_dir = str_replace('/', '\/', $cut_upload_dir);
+		$upload_url = $upload_dir['url'] . '/';
 
-		$pattern = "#wp-content\\\/uploads\\\/\d{4}\\\/\d{2}#i";
-		$json = preg_replace($pattern, $cut_upload_dir, $json);
+		$json = preg_replace(
+			'/http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/',
+			trim( json_encode( $upload_url .'$1' ), "\"" ),
+			$json
+		);
 
 		if( is_wp_error($json) ) {
 			exit('error');
@@ -1476,9 +1481,7 @@ class cherry_data_manager_content_installer {
 							}
 						}
 					}
-				} /*elseif ( 'cherry-shortcodes' == $widget_title ) {
-					content
-				}*/
+				}
 			}
 		}
 
