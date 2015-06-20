@@ -344,7 +344,7 @@ jQuery(document).ready(function() {
 
 	function switch_ajax_post(response){
 
-		var import_iterations = 18;
+		var import_iterations = 20;
 
 		switch (response) {
 			case '0':

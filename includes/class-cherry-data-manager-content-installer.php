@@ -51,24 +51,26 @@ class cherry_data_manager_content_installer {
 			session_start();
 		}
 
-		add_action( 'wp_ajax_import_xml',                   array( $this, 'import_xml' ) );
-		add_action( 'wp_ajax_import_options',               array( $this, 'import_options' ) );
-		add_action( 'wp_ajax_import_custom_tables',         array( $this, 'import_custom_tables' ) );
-		add_action( 'wp_ajax_import_categories',            array( $this, 'import_categories' ) );
-		add_action( 'wp_ajax_import_tags',                  array( $this, 'import_tags' ) );
-		add_action( 'wp_ajax_process_terms',                array( $this, 'process_terms' ) );
-		add_action( 'wp_ajax_import_posts',                 array( $this, 'import_posts' ) );
-		add_action( 'wp_ajax_attach_terms',                 array( $this, 'attach_terms' ) );
-		add_action( 'wp_ajax_attach_comments',              array( $this, 'attach_comments' ) );
-		add_action( 'wp_ajax_attach_postmeta',              array( $this, 'attach_postmeta' ) );
-		add_action( 'wp_ajax_import_menu_item',             array( $this, 'import_menu_item' ) );
-		add_action( 'wp_ajax_import_attachment',            array( $this, 'import_attachment' ) );
-		add_action( 'wp_ajax_generate_attachment_metadata', array( $this, 'generate_attachment_metadata' ) );
-		add_action( 'wp_ajax_import_attachment_metadata',   array( $this, 'import_attachment_metadata' ) );
-		add_action( 'wp_ajax_import_parents',               array( $this, 'import_parents' ) );
-		add_action( 'wp_ajax_update_featured_images',       array( $this, 'update_featured_images' ) );
-		add_action( 'wp_ajax_update_attachment',            array( $this, 'update_attachment' ) );
-		add_action( 'wp_ajax_import_json',                  array( $this, 'import_json' ) );
+		add_action( 'wp_ajax_import_xml',                          array( $this, 'import_xml' ) );
+		add_action( 'wp_ajax_import_options',                      array( $this, 'import_options' ) );
+		add_action( 'wp_ajax_import_custom_tables',                array( $this, 'import_custom_tables' ) );
+		add_action( 'wp_ajax_import_categories',                   array( $this, 'import_categories' ) );
+		add_action( 'wp_ajax_import_tags',                         array( $this, 'import_tags' ) );
+		add_action( 'wp_ajax_process_terms',                       array( $this, 'process_terms' ) );
+		add_action( 'wp_ajax_import_posts',                        array( $this, 'import_posts' ) );
+		add_action( 'wp_ajax_attach_terms',                        array( $this, 'attach_terms' ) );
+		add_action( 'wp_ajax_attach_comments',                     array( $this, 'attach_comments' ) );
+		add_action( 'wp_ajax_attach_postmeta',                     array( $this, 'attach_postmeta' ) );
+		add_action( 'wp_ajax_import_menu_item',                    array( $this, 'import_menu_item' ) );
+		add_action( 'wp_ajax_import_attachment',                   array( $this, 'import_attachment' ) );
+		add_action( 'wp_ajax_generate_attachment_metadata_step_1', array( $this, 'generate_attachment_metadata_1' ) );
+		add_action( 'wp_ajax_generate_attachment_metadata_step_2', array( $this, 'generate_attachment_metadata_2' ) );
+		add_action( 'wp_ajax_generate_attachment_metadata_step_3', array( $this, 'generate_attachment_metadata_3' ) );
+		add_action( 'wp_ajax_import_attachment_metadata',          array( $this, 'import_attachment_metadata' ) );
+		add_action( 'wp_ajax_import_parents',                      array( $this, 'import_parents' ) );
+		add_action( 'wp_ajax_update_featured_images',              array( $this, 'update_featured_images' ) );
+		add_action( 'wp_ajax_update_attachment',                   array( $this, 'update_attachment' ) );
+		add_action( 'wp_ajax_import_json',                         array( $this, 'import_json' ) );
 
 	}
 
@@ -985,7 +987,7 @@ class cherry_data_manager_content_installer {
 		$this->verify_nonce();
 
 		if( empty($_SESSION['attachment_posts']) ) {
-			exit('generate_attachment_metadata');
+			exit('generate_attachment_metadata_step_1');
 		}
 
 		$_SESSION['missing_menu_items']  = array();
@@ -1039,19 +1041,16 @@ class cherry_data_manager_content_installer {
 		 */
 		do_action( 'cherry_data_manager_import_attachment' );
 
-		exit('generate_attachment_metadata');
+		exit('generate_attachment_metadata_step_1');
 
 	}
 
 	/**
-	 * Generate attachment metadata
-	 *
-	 * Import Step#12
+	 * Generate attachment meta. Step 1
 	 *
 	 * @since 1.0.0
 	 */
-	function generate_attachment_metadata() {
-
+	function generate_attachment_metadata_1() {
 		$this->verify_nonce();
 
 		do_action( 'cherry_data_manager_generate_attachment_metadata' );
@@ -1060,15 +1059,115 @@ class cherry_data_manager_content_installer {
 			exit('import_attachment_metadata');
 		}
 
-		$metadata = $_SESSION['attachment_metapost'];
+		$range = $this->get_step_range( 1 );
+		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
 
-		foreach ($metadata as $key => $value) {
-			ini_set('max_execution_time', -1);
-			set_time_limit(0);
-			$_SESSION['attachment_metapost'][$key]['file'] = wp_generate_attachment_metadata($value['post_id'], $value['file']);
+		exit('generate_attachment_metadata_step_2');
+	}
+
+	/**
+	 * Generate attachment meta. Step 2
+	 *
+	 * @since 1.0.0
+	 */
+	function generate_attachment_metadata_2() {
+		$this->verify_nonce();
+
+		do_action( 'cherry_data_manager_generate_attachment_metadata' );
+
+		if(empty($_SESSION['attachment_posts'])){
+			exit('import_attachment_metadata');
 		}
 
+		$range = $this->get_step_range( 2 );
+		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
+
+		exit('generate_attachment_metadata_step_3');
+	}
+
+	/**
+	 * Generate attachment meta. Step 3
+	 *
+	 * @since 1.0.0
+	 */
+	function generate_attachment_metadata_3() {
+		$this->verify_nonce();
+
+		do_action( 'cherry_data_manager_generate_attachment_metadata' );
+
+		if(empty($_SESSION['attachment_posts'])){
+			exit('import_attachment_metadata');
+		}
+
+		$range = $this->get_step_range( 3 );
+		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
+
 		exit('import_attachment_metadata');
+	}
+
+	/**
+	 * Get current step index range
+	 *
+	 * @since 1.0.0
+	 */
+	function get_step_range( $step = 1 ) {
+
+		$metadata = $_SESSION['attachment_metapost'];
+		$count    = count( $metadata );
+		$by_step  = intval( $count/3 );
+
+		$range = array(
+			'from' => 0,
+			'to'   => $count
+		);
+
+		switch ( $step ) {
+
+			case 1:
+				$range['to'] = $by_step - 1;
+				break;
+
+			case 2:
+				$range['from'] = $by_step;
+				$range['to']   = $by_step*2;
+				break;
+
+			case 3:
+				$range['from'] = $by_step*2 + 1;
+				break;
+
+		}
+
+		return $range;
+	}
+
+	/**
+	 * Process attachment regenerate by step
+	 *
+	 * @since 1.0.0
+	 */
+	function generate_attachment_meta_step( $from = 0, $to = 20 ) {
+
+		$metadata = $_SESSION['attachment_metapost'];
+
+		$values = array_values( $metadata );
+		$keys   = array_keys( $metadata );
+
+		for ( $i = $from; $i <= $to; $i++ ) {
+
+			$key   = isset( $keys[$i] ) ? $keys[$i] : false;
+			$value = isset( $values[$i] ) ? $values[$i] : false;
+
+			if ( ! $key && ! $value ) {
+				continue;
+			}
+
+			ini_set( 'max_execution_time', -1 );
+			set_time_limit( 0 );
+
+			$_SESSION['attachment_metapost'][$key]['file'] = wp_generate_attachment_metadata( $value['post_id'], $value['file'] );
+		}
+
 	}
 
 	/**
