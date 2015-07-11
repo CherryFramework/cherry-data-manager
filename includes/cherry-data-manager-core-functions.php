@@ -84,7 +84,7 @@ function cherry_dm_get_admin_template( $template = '' ) {
 function cherry_dm_import_selector() {
 
 	// this function warks only if is import from wizard
-	if ( !isset( $_GET['page'] ) || 'cherry-wizard' != $_GET['page'] ) {
+	if ( !isset( $_GET['page'] ) || in_array( $_GET['page'], array( 'monstroid-wizard', 'cherry-wizard' ) ) ) {
 		return;
 	}
 

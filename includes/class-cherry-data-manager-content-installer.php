@@ -30,11 +30,11 @@ if ( ! defined( 'WPINC' ) ) {
 class cherry_data_manager_content_installer {
 
 	/**
-	 * Set transients to save temporary installation data
+	 * Holder for tools class instance
 	 *
-	 * @since 1.0.0
+	 * @since 1.1.0
 	 */
-	public $import_transients = array( 'categories', 'terms', 'tags', 'posts' );
+	public $tools = false;
 
 	/**
 	 * Set transients prefix
@@ -46,6 +46,9 @@ class cherry_data_manager_content_installer {
 	function __construct() {
 
 		include_once ( 'libs/parsers.php' );
+		include_once ( 'class-cherry-data-manager-install-tools.php' );
+
+		$this->tools = new Cherry_Data_Manager_Install_Tools();
 
 		if ( ! session_id() ) {
 			session_start();
@@ -97,15 +100,11 @@ class cherry_data_manager_content_installer {
 
 		$upload_dir = cherry_dm_get_upload_path();
 
-		$import_data = $this->_parse_xml( $upload_dir . $xml_file );
-
-		if ( !$import_data || is_wp_error( $import_data ) ) {
+		if ( ! file_exists( $upload_dir . $xml_file ) ) {
 			exit('error');
 		}
 
-		foreach ( $this->import_transients as $transient ) {
-			set_transient( $this->transients_prefix . $transient, $import_data[$transient], DAY_IN_SECONDS );
-		}
+		$this->tools->add_xml_file( $upload_dir . $xml_file );
 
 		$ids_file = $upload_dir . 'rewrite-ids.json';
 
@@ -300,7 +299,7 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
-		$categories_array = get_transient( $this->transients_prefix . 'categories' );
+		$categories_array = $this->tools->get_xml_data( 'categories' );
 		$categories_array = apply_filters( 'wp_import_categories', $categories_array );
 
 		if ( empty( $categories_array ) ) {
@@ -364,7 +363,7 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
-		$tag_array = get_transient( $this->transients_prefix . 'tags' );
+		$tag_array = $this->tools->get_xml_data( 'tags' );
 		$tag_array = apply_filters( 'wp_import_tags', $tag_array );
 
 		if ( empty( $tag_array ) ) {
@@ -418,7 +417,7 @@ class cherry_data_manager_content_installer {
 		$this->verify_nonce();
 
 
-		$terms = get_transient( $this->transients_prefix . 'terms' );
+		$terms = $this->tools->get_xml_data( 'terms' );
 		$terms = apply_filters( 'wp_import_terms', $terms );
 
 		$_SESSION['processed_menus'] = array();
@@ -496,7 +495,7 @@ class cherry_data_manager_content_installer {
 		$_SESSION['menu_items']           = array();
 		$_SESSION['post_orphans']         = array();
 
-		$posts_array      = get_transient( $this->transients_prefix . 'posts' );
+		$posts_array      = $this->tools->get_xml_data( 'posts' );
 		$posts_array      = apply_filters( 'wp_import_posts', $posts_array );
 		$attachment_posts = array();
 
@@ -645,7 +644,7 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
-		$posts_array = get_transient( $this->transients_prefix . 'posts' );
+		$posts_array = $this->tools->get_xml_data( 'posts' );
 
 		// go to next step if no posts was processed on prev step
 		if ( !is_array( $_SESSION['processed_posts'] ) ) {
@@ -718,7 +717,7 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
-		$posts_array = get_transient( $this->transients_prefix . 'posts' );
+		$posts_array = $this->tools->get_xml_data( 'posts' );
 
 		// go to next step if no posts was processed on prev step
 		if ( !is_array( $_SESSION['processed_posts'] ) ) {
@@ -816,7 +815,7 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
-		$posts_array = get_transient( $this->transients_prefix . 'posts' );
+		$posts_array = $this->tools->get_xml_data( 'posts' );
 
 		// go to next step if no posts was processed on prev step
 		if ( ! is_array( $_SESSION['processed_posts'] ) ) {
@@ -1596,7 +1595,7 @@ class cherry_data_manager_content_installer {
 	function upd_mega_parents( &$item, $key ) {
 		if( 'mega_menu_parent_menu_id' == $key ) {
 			$old  = $item;
-			$item = $_SESSION['processed_menu_items'][$old];
+			$item = isset( $_SESSION['processed_menu_items'][$old] ) ? $_SESSION['processed_menu_items'][$old] : false;
 		}
 	}
 
@@ -1916,51 +1915,6 @@ class cherry_data_manager_content_installer {
 		if ( ! $verify ) {
 			exit ( 'instal_error');
 		}
-	}
-
-	/**
-	 * parse XML file into data array
-	 *
-	 * @param  string $file path to XML file
-	 * @return array        parsed data
-	 * @since  1.0.0
-	 */
-	public function _parse_xml( $file ) {
-
-		$file_content = file_get_contents($file);
-		$file_content = iconv('utf-8', 'utf-8//IGNORE', $file_content);
-		$file_content = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $file_content);
-
-		if ( !$file_content ) {
-			return false;
-		}
-
-		$dom = new DOMDocument('1.0');
-		$dom->loadXML( $file_content );
-
-		$xml                   = simplexml_import_dom( $dom );
-		$old_upload_url        = $xml->xpath('/rss/channel/wp:base_site_url');
-		$old_upload_url        = $old_upload_url[0];
-		$upload_dir            = wp_upload_dir();
-		$upload_dir            = $upload_dir['url'];
-		$cut_upload_dir        = substr($upload_dir, strpos($upload_dir, 'wp-content/uploads'), strlen($upload_dir)-1);
-		$cut_date_upload_dir   = '<![CDATA[' . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
-		$cut_date_upload_dir_2 = "\"" . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
-
-		$pattern            = '/wp-content\/uploads\/\d{4}\/\d{2}/i';
-		$patternCDATA       = '/<!\[CDATA\[\d{4}\/\d{2}/i';
-		$pattern_meta_value = '/("|\')\d{4}\/\d{2}/i';
-
-		$file_content = str_replace($old_upload_url, site_url(), $file_content);
-		$file_content = preg_replace($patternCDATA, $cut_date_upload_dir, $file_content);
-		$file_content = preg_replace($pattern_meta_value, $cut_date_upload_dir_2, $file_content);
-		$file_content = preg_replace($pattern, $cut_upload_dir, $file_content);
-
-		$parser       = new Cherry_WXR_Parser();
-		$parser_array = $parser->parse( $file_content, $file );
-
-		return $parser_array;
-
 	}
 
 	/**
