@@ -1952,10 +1952,6 @@ class cherry_data_manager_content_installer {
 
 		do_action( 'cherry_data_manager_import_end' );
 
-		foreach ( $this->import_transients as $transient ) {
-			delete_transient( $this->transients_prefix . $transient );
-		}
-
 		exit('import_json');
 	}
 
