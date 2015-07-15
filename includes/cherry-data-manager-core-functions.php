@@ -100,15 +100,30 @@ function cherry_dm_import_selector() {
 		$remote_disabled = 'disabled';
 	}
 
-	echo '<div class="dm-import-type-selector box-default_ content-wrap_">';
-	echo     '<div class="dm-selector-message_">';
-	echo         __( 'To make your site look like Live demo of your theme (with the same text and images) you need to install "Sample data".', $cherry_data_manager->slug );
-	echo     '</div>';
-	echo     '<div class="dm-selector-buttons_">';
-	echo        '<a href="#" class="button-primary_ ' . $remote_disabled . ' button-extra_" id="cherry-dm-remote-import">' . __( 'From cloud', $cherry_data_manager->slug ) . '<span class="button-desc_">' . __( 'Automatically import from TM cloud', $cherry_data_manager->slug ) . '</span></a>';
-	echo        '<a href="#" class="button-default_ button-extra_" id="cherry-dm-local-import">' . __( 'From local computer', $cherry_data_manager->slug ) . '<span class="button-desc_">' . __( 'Import sample data from local computer', $cherry_data_manager->slug ) . '</span></a>';
-	echo        '<a href="' . apply_filters( 'cherry_data_manager_cancel_import_url', get_admin_url() ) . '" class="button-default_ button-extra_">' . __( 'Skip', $cherry_data_manager->slug ) . '<span class="button-desc_">' . __( 'Don\'t install sample data', $cherry_data_manager->slug ) . '</span></a>';
-	echo     '</div>';
-	echo '</div>';
-	echo '<div class="dm-return-to-switcher hidden_"><a href="#" id="cherry-dm-return-to-switcher">' . __( 'Return to switcher', $cherry_data_manager->slug ) . '</a></div>';
+	?>
+
+	<div class="dm-import-type-selector">
+		<div class="dm-selector-message_">
+		<?php _e( 'To make your site look like Live demo of your theme (with the same text and images) you need to install "Sample data".', $cherry_data_manager->slug ); ?>
+		</div>
+		<div class="dm-selector-buttons_">
+			<a href="#" class="button-primary_ <?php echo $remote_disabled; ?>" id="cherry-dm-remote-import">
+				<?php _e( 'Install from cloud', $cherry_data_manager->slug ); ?>
+			</a>
+			<a href="#" class="button-default_" id="cherry-dm-local-import">
+				<?php _e( 'Install from folder', $cherry_data_manager->slug ); ?>
+			</a>
+			<div class="skip-sample-data">
+				<a href="<?php echo apply_filters( 'cherry_data_manager_cancel_import_url', get_admin_url() ); ?>">
+					<?php _e( 'Skip', $cherry_data_manager->slug ); ?>
+				</a>
+			</div>
+		</div>
+	</div>
+	<div class="dm-return-to-switcher hidden_">
+		<a href="#" id="cherry-dm-return-to-switcher">
+			<?php _e( 'Return to switcher', $cherry_data_manager->slug ); ?>
+		</a>
+	</div>
+	<?php
 }

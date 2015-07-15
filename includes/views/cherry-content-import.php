@@ -19,8 +19,6 @@ global $cherry_data_manager;
 ?>
 <div class="wrap">
 	<div class="<?php echo $cherry_data_manager->ui_wrapper_class( array( 'cherry-wizard_' ) ); ?>">
-		<h2 class="main-title_"><?php _e( '<b>Import &amp; install</b> content', $cherry_data_manager->slug ); ?></h2>
-
 		<?php
 			/**
 			 * hook cherry_data_manager_pre_import
@@ -34,6 +32,11 @@ global $cherry_data_manager;
 
 		?>
 		<div class="box-default_ content-wrap_">
+			<h2 class="main-title_">
+				<?php _e( 'Import &amp; install content', $cherry_data_manager->slug ); ?>
+			</h2>
+		</div>
+		<div class="box-default_ alt-box_ content-wrap_">
 			<div class="dm-import-wrap">
 				<?php cherry_dm_import_selector(); ?>
 				<div class="dm-loaders">

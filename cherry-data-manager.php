@@ -330,7 +330,7 @@ if ( !class_exists('cherry_data_manager') ) {
 			 *
 			 * @param array $classes - default CSS classes array
 			 */
-			$classes = apply_filters( 'cherry_ui_wrapper_class', $classes );
+			$classes = apply_filters( 'cherry_ui_wrapper_class', $classes, 'data-manager' );
 
 			$classes = array_unique( $classes );
 
