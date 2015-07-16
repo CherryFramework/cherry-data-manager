@@ -96,26 +96,28 @@ function cherry_dm_import_selector() {
 		return;
 	}
 
-	if ( !$cherry_data_manager->importer->auto_upload ) {
+	if ( ! $cherry_data_manager->importer->auto_upload ) {
 		$remote_disabled = 'disabled';
 	}
 
 	?>
 
 	<div class="dm-import-type-selector">
-		<div class="dm-selector-message_">
-		<?php _e( 'To make your site look like Live demo of your theme (with the same text and images) you need to install "Sample data".', $cherry_data_manager->slug ); ?>
-		</div>
+		<?php do_action( 'cherry_data_manager_import_type_before' ); ?>
 		<div class="dm-selector-buttons_">
 			<a href="#" class="button-primary_ <?php echo $remote_disabled; ?>" id="cherry-dm-remote-import">
+				<span class="dashicons dashicons-download"></span>
 				<?php _e( 'Install from cloud', $cherry_data_manager->slug ); ?>
 			</a>
-			<a href="#" class="button-default_" id="cherry-dm-local-import">
+			or
+			<a href="#" class="button-primary_" id="cherry-dm-local-import">
+				<span class="dashicons dashicons-category"></span>
 				<?php _e( 'Install from folder', $cherry_data_manager->slug ); ?>
 			</a>
 			<div class="skip-sample-data">
 				<a href="<?php echo apply_filters( 'cherry_data_manager_cancel_import_url', get_admin_url() ); ?>">
-					<?php _e( 'Skip', $cherry_data_manager->slug ); ?>
+					<?php _e( 'Skip this step', $cherry_data_manager->slug ); ?>
+					<span class="dashicons dashicons-arrow-right-alt"></span>
 				</a>
 			</div>
 		</div>

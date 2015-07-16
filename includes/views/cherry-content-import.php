@@ -35,18 +35,19 @@ global $cherry_data_manager;
 			<h2 class="main-title_">
 				<?php _e( 'Import &amp; install content', $cherry_data_manager->slug ); ?>
 			</h2>
+			<?php _e( 'To make your site look like Live demo of your theme (with the same text and images) you need to install "Sample data".', $cherry_data_manager->slug ); ?>
 		</div>
 		<div class="box-default_ alt-box_ content-wrap_">
 			<div class="dm-import-wrap">
 				<?php cherry_dm_import_selector(); ?>
 				<div class="dm-loaders">
 					<div id='upload_status'>
-						<div class="progress-bar_ loader_bar"><span class="progress-bar-load_ transition_2"></span></div>
 						<div class="progress-bar-counter_"><span>0</span>% <?php _e( 'complete', $cherry_data_manager->slug ); ?></div>
+						<div class="progress-bar_ loader_bar"><span class="progress-bar-load_ transition_2"></span></div>
 					</div>
 					<div id='import_data' class="hidden_">
-						<div class="progress-bar_ loader_bar"><span class="progress-bar-load_ transition"></span></div>
 						<div class="progress-bar-counter_"><span>0</span>% <?php _e( 'complete', $cherry_data_manager->slug ); ?></div>
+						<div class="progress-bar_ loader_bar"><span class="progress-bar-load_ transition"></span></div>
 					</div>
 				</div>
 				<div class="box-inner_">
