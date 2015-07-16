@@ -93,12 +93,12 @@ global $cherry_data_manager;
 									<br>
 									<a class="wizard-upload-files" href="#"><?php _e('Add More Files', $cherry_data_manager->slug); ?></a>
 								</p>
-								<a class="button-primary_ not_active next_step" href="#"><?php _e('Continue Install', $cherry_data_manager->slug); ?></a><span id="not_load_file" class="hidden_"><?php _e('Missing .XML file', $cherry_data_manager->slug); ?></span>
+								<a class="button-primary_ not_active next_step" href="#"><?php _e('Continue Install', $cherry_data_manager->slug); ?></a><span id="not_load_file" class="hidden_"><?php _e('Missing .XML or .JSON file', $cherry_data_manager->slug); ?></span>
 							</div>
 						</div>
 					</div>
 					<div id="import_step_3" class="hidden_">
-						<div class="content-box install-finished_">
+						<div class="box-default_ box-default_ content-box install-finished_">
 							<h3><?php _e( 'Congratulations', $cherry_data_manager->slug ); ?></h3>
 							<p class="install-finished-text_">
 								<?php _e( 'Content has been successfully installed', $cherry_data_manager->slug ); ?>
