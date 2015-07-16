@@ -124,6 +124,7 @@ function cherry_dm_import_selector() {
 	</div>
 	<div class="dm-return-to-switcher hidden_">
 		<a href="#" id="cherry-dm-return-to-switcher">
+			<span class="dashicons dashicons-arrow-left-alt"></span>
 			<?php _e( 'Return to switcher', $cherry_data_manager->slug ); ?>
 		</a>
 	</div>

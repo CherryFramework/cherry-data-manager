@@ -160,7 +160,7 @@ jQuery(document).ready(function() {
 		$info_holder.removeClass('hidden_');
 		$upload_button.on('click', add_more_files);
 		$continue_install.off();
-		if(loaded_XML /*&& loaded_JSON*/){
+		if(loaded_XML /*&& loaded_JSON*/) {
 			jQuery('p .upload_status_text', $info_holder).html(cherry_dm_import_texts['uploaded_status_text_1']);
 			$not_load_file.addClass('hidden_');
 			$upload_status.addClass('upload_done');
@@ -171,9 +171,10 @@ jQuery(document).ready(function() {
 
 			});
 		} else {
-			$continue_install.on('click', function(){
+			$continue_install.on('click', function(event) {
+				event.preventDefault();
 				$not_load_file.removeClass('hidden_');
-			})
+			});
 		}
 	}
 
