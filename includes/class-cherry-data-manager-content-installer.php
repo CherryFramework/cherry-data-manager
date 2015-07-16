@@ -1351,10 +1351,6 @@ class cherry_data_manager_content_installer {
 		$this->import_end();
 	}
 
-	function test_c( $matches ) {
-		var_dump( $matches );
-	}
-
 	/**
 	 * Import widgets and set necessary settings
 	 *
