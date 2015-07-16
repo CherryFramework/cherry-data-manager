@@ -32,6 +32,7 @@ global $cherry_data_manager;
 
 		?>
 		<div class="box-default_ content-wrap_">
+			<?php do_action( 'cherry_data_manager_before_title' ); ?>
 			<h2 class="main-title_">
 				<?php _e( 'Import &amp; install content', $cherry_data_manager->slug ); ?>
 			</h2>
