@@ -242,7 +242,7 @@ class cherry_data_manager_content_installer {
 				if ( 'mpsl_slides' === $table ) {
 					$row = $this->remap_slider_urls( $row );
 				}
-				$wpdb->insert( $table_name, $row );
+				$wpdb->replace( $table_name, $row );
 			}
 
 		}
