@@ -167,6 +167,9 @@ jQuery(document).ready(function() {
 			$continue_install.removeClass('not_active').on('click', function(event){
 
 				event.preventDefault();
+				var event = jQuery.Event('cherry_data_manager_start_install');
+				jQuery(document).trigger( event );
+
 				cherry_dm_prepare_to_install();
 
 			});
