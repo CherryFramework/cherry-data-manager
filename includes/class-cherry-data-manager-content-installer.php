@@ -13,16 +13,6 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Todo
- *
- * 1. Add errors handler
- * 2. Separate tstpes - upload content and installation
- * 3. Maybe refactoring?
- * 4. Check $_SESSION['processed_terms'] - need or not?
- *
- */
-
-/**
  * main importer class
  *
  * @since  1.0.0
@@ -160,10 +150,10 @@ class cherry_data_manager_content_installer {
 		$theme = get_option( 'stylesheet' );
 
 		$patterns = array(
-			'/theme\d+/',
-			'/theme\d+_defaults/',
-			'/theme\d+_statics/',
-			'/theme\d+_statics_defaults/',
+			'/(theme\d+|monstroid)/',
+			'/(theme\d+|monstroid)_defaults/',
+			'/(theme\d+|monstroid)_statics/',
+			'/(theme\d+|monstroid)_statics_defaults/',
 		);
 
 		$replace = array(
