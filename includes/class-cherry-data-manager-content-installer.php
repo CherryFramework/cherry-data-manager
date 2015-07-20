@@ -1650,6 +1650,7 @@ class cherry_data_manager_content_installer {
 		if ( ! is_array( $old_ids ) ) {
 			return $new_ids;
 		}
+
 		foreach ( $old_ids as $id ) {
 			$new_ids[] = isset( $_SESSION['processed_posts'][$id] ) ? $_SESSION['processed_posts'][$id] : false;
 		}
@@ -1666,9 +1667,9 @@ class cherry_data_manager_content_installer {
 		$remap_options = apply_filters(
 			'cherry_data_manager_rewrite_options',
 			array(
-				'logo-image-path',
-				'footer-logo-image-path',
-				'general-favicon'
+				'logo-image-path'        => 'logo-subsection',
+				'footer-logo-image-path' => 'footer-logo-subsection',
+				'general-favicon'        => 'general-section'
 			)
 		);
 
@@ -1699,6 +1700,7 @@ class cherry_data_manager_content_installer {
 			}
 
 			$values     = explode( ',', $values );
+
 			$new_values = $this->remap_img_ids( $values );
 
 			if ( empty( $new_values ) ) {
@@ -1706,13 +1708,14 @@ class cherry_data_manager_content_installer {
 			}
 
 			$new_values = implode( ',', $new_values );
+
 			// add new values to options array
-			if ( ! isset( $options[$section]['options-list'][$name]['value'] ) ) {
+			if ( ! isset( $options[$section]['options-list'][$name] ) ) {
 				continue;
 			}
 
-			$options[$section]['options-list'][$name]['value'] = $new_values;
-			$default_options[$section]['options-list'][$name]['value'] = $new_values;
+			$options[$section]['options-list'][$name]         = $new_values;
+			$default_options[$section]['options-list'][$name] = $new_values;
 
 		}
 
