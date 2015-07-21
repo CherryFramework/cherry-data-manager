@@ -265,7 +265,7 @@ class cherry_data_manager_content_installer {
 			}
 
 			$json_string = preg_replace(
-				'/[\"\']http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
+				'/[\"\']http:\/\/(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
 				json_encode( $upload_url .'$1' ),
 				$data_row[$key]
 			);
