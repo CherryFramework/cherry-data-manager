@@ -36,7 +36,7 @@ global $cherry_data_manager;
 			<h2 class="main-title_">
 				<?php _e( 'Import &amp; install content', $cherry_data_manager->slug ); ?>
 			</h2>
-			<?php _e( 'To make your site look like Live demo of your theme (with the same text and images) you need to install "Sample data".', $cherry_data_manager->slug ); ?>
+			<?php _e( 'Please, install "Sample data" in order to make your webste looks exactly as our live demo including all images, pages, layout options etc.', $cherry_data_manager->slug ); ?>
 		</div>
 		<div class="box-default_ alt-box_ content-wrap_">
 			<div class="dm-import-wrap">
