@@ -196,6 +196,8 @@ class cherry_data_manager_content_installer {
 		$wp_upload       = wp_upload_dir();
 		$upload_base_dir = $wp_upload['basedir'];
 
+		$_SESSION['files_to_remove'][] = $templates_zip;
+
 		if ( ! file_exists( $templates_zip ) ) {
 			exit( 'import_custom_tables' );
 		}
@@ -1496,8 +1498,11 @@ class cherry_data_manager_content_installer {
 
 			if ( ! empty( $_SESSION['files_to_remove'] ) ) {
 				foreach ( $_SESSION['files_to_remove'] as $file ) {
-					unlink( $file );
+					if ( file_exists( $file ) ) {
+						unlink( $file );
+					}
 				}
+				unset( $_SESSION['files_to_remove'] );
 			}
 
 			exit( 'import_end' );
