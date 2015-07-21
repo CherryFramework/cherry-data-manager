@@ -15,7 +15,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * main importer class
  *
- * @since  1.0.0
+ * @since  1.0.1
  */
 class Cherry_Data_Manager_Install_Tools {
 
@@ -48,7 +48,7 @@ class Cherry_Data_Manager_Install_Tools {
 	 *
 	 * @param  string $file path to XML file
 	 * @return array        parsed data
-	 * @since  1.0.0
+	 * @since  1.0.1
 	 */
 	public function _parse_xml( $file ) {
 
@@ -91,7 +91,7 @@ class Cherry_Data_Manager_Install_Tools {
 	/**
 	 * Get parsed XML data
 	 *
-	 * @since  1.1.0
+	 * @since  1.0.1
 	 * @param  string $key
 	 * @return mixed
 	 */
