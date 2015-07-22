@@ -222,19 +222,16 @@ class cherry_data_manager_content_installer {
 		if ( !file_exists( $upload_dir . $tables_file ) ) {
 			exit('import_categories');
 		}
-
 		$json = file_get_contents( $upload_dir . $tables_file );
 
 		$_SESSION['files_to_remove'][] = $upload_dir . $tables_file;
 
 		$tables = json_decode( $json, true );
-
 		if ( ! is_array( $tables ) || empty( $tables ) ) {
 			exit( 'import_categories' );
 		}
 
 		global $wpdb;
-
 		foreach ( $tables as $table => $table_data ) {
 
 			$table_name = $wpdb->prefix . $table;
@@ -280,7 +277,7 @@ class cherry_data_manager_content_installer {
 			}
 
 			$json_string = preg_replace(
-				'/[\"\']http:\/\/(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
+				'/[\"\']http:.{4}(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
 				json_encode( $upload_url .'$1' ),
 				$data_row[$key]
 			);
