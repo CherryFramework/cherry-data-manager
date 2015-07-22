@@ -67,19 +67,20 @@ class Cherry_Data_Manager_Install_Tools {
 		$old_upload_url        = $xml->xpath('/rss/channel/wp:base_site_url');
 		$old_upload_url        = $old_upload_url[0];
 		$upload_dir            = wp_upload_dir();
+		$upload_url            = $upload_dir['url'] . '/';
 		$upload_dir            = $upload_dir['url'];
 		$cut_upload_dir        = substr($upload_dir, strpos($upload_dir, 'wp-content/uploads'), strlen($upload_dir)-1);
 		$cut_date_upload_dir   = '<![CDATA[' . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 		$cut_date_upload_dir_2 = "\"" . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 
-		$pattern            = '/([\'\"])wp-content\/uploads\/\d{4}\/\d{2}/i';
+		$pattern            = '/[\"\']http:.{2}(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/i';
 		$patternCDATA       = '/<!\[CDATA\[\d{4}\/\d{2}/i';
 		$pattern_meta_value = '/("|\')\d{4}\/\d{2}/i';
 
 		$file_content = str_replace( $old_upload_url, site_url(), $file_content );
 		$file_content = preg_replace( $patternCDATA, $cut_date_upload_dir, $file_content );
 		$file_content = preg_replace( $pattern_meta_value, $cut_date_upload_dir_2, $file_content );
-		$file_content = preg_replace( $pattern, '$1' . $cut_upload_dir, $file_content );
+		$file_content = preg_replace( $pattern, '"' . $upload_url .'$1"', $file_content );
 
 		$parser       = new Cherry_WXR_Parser();
 		$parser_array = $parser->parse( $file_content, $file );
