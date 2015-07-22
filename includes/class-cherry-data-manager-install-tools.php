@@ -72,14 +72,14 @@ class Cherry_Data_Manager_Install_Tools {
 		$cut_date_upload_dir   = '<![CDATA[' . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 		$cut_date_upload_dir_2 = "\"" . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 
-		$pattern            = '/wp-content\/uploads\/\d{4}\/\d{2}/i';
+		$pattern            = '/([\'\"])wp-content\/uploads\/\d{4}\/\d{2}/i';
 		$patternCDATA       = '/<!\[CDATA\[\d{4}\/\d{2}/i';
 		$pattern_meta_value = '/("|\')\d{4}\/\d{2}/i';
 
 		$file_content = str_replace( $old_upload_url, site_url(), $file_content );
 		$file_content = preg_replace( $patternCDATA, $cut_date_upload_dir, $file_content );
 		$file_content = preg_replace( $pattern_meta_value, $cut_date_upload_dir_2, $file_content );
-		$file_content = preg_replace( $pattern, $cut_upload_dir, $file_content );
+		$file_content = preg_replace( $pattern, '$1' . $cut_upload_dir, $file_content );
 
 		$parser       = new Cherry_WXR_Parser();
 		$parser_array = $parser->parse( $file_content, $file );
