@@ -350,7 +350,7 @@ jQuery(document).ready(function() {
 
 	function switch_ajax_post(response){
 
-		var import_iterations = 20;
+		var import_iterations = 21;
 
 		switch (response) {
 			case '0':
@@ -365,7 +365,7 @@ jQuery(document).ready(function() {
 			case 'import_end':
 				add_text_status('import_complete');
 			break;
-		   /* case 'import_json':
+			/* case 'import_json':
 				if(loaded_JSON){
 					ajax_post(response, loaded_JSON);
 				}else{

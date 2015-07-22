@@ -63,6 +63,7 @@ class cherry_data_manager_content_installer {
 		add_action( 'wp_ajax_generate_attachment_metadata_step_1', array( $this, 'generate_attachment_metadata_1' ) );
 		add_action( 'wp_ajax_generate_attachment_metadata_step_2', array( $this, 'generate_attachment_metadata_2' ) );
 		add_action( 'wp_ajax_generate_attachment_metadata_step_3', array( $this, 'generate_attachment_metadata_3' ) );
+		add_action( 'wp_ajax_generate_attachment_metadata_step_4', array( $this, 'generate_attachment_metadata_4' ) );
 		add_action( 'wp_ajax_import_attachment_metadata',          array( $this, 'import_attachment_metadata' ) );
 		add_action( 'wp_ajax_import_parents',                      array( $this, 'import_parents' ) );
 		add_action( 'wp_ajax_update_featured_images',              array( $this, 'update_featured_images' ) );
@@ -1103,6 +1104,26 @@ class cherry_data_manager_content_installer {
 		$range = $this->get_step_range( 3 );
 		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
 
+		exit('generate_attachment_metadata_step_4');
+	}
+
+	/**
+	 * Generate attachment meta. Step 4
+	 *
+	 * @since 1.0.0
+	 */
+	function generate_attachment_metadata_4() {
+		$this->verify_nonce();
+
+		do_action( 'cherry_data_manager_generate_attachment_metadata' );
+
+		if(empty($_SESSION['attachment_posts'])){
+			exit('import_attachment_metadata');
+		}
+
+		$range = $this->get_step_range( 4 );
+		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
+
 		exit('import_attachment_metadata');
 	}
 
@@ -1115,7 +1136,7 @@ class cherry_data_manager_content_installer {
 
 		$metadata = $_SESSION['attachment_metapost'];
 		$count    = count( $metadata );
-		$by_step  = intval( $count/3 );
+		$by_step  = intval( $count/4 );
 
 		$range = array(
 			'from' => 0,
@@ -1130,11 +1151,16 @@ class cherry_data_manager_content_installer {
 
 			case 2:
 				$range['from'] = $by_step;
-				$range['to']   = $by_step*2;
+				$range['to']   = $by_step*$step;
 				break;
 
 			case 3:
-				$range['from'] = $by_step*2 + 1;
+				$range['from'] = $by_step*($step - 1) + 1;
+				$range['to']   = $by_step*$step;
+				break;
+
+			case 4:
+				$range['from'] = $by_step*($step - 1) + 1;
 				break;
 
 		}
