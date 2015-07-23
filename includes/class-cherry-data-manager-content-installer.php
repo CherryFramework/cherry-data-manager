@@ -65,6 +65,7 @@ class cherry_data_manager_content_installer {
 		add_action( 'wp_ajax_generate_attachment_metadata_step_3', array( $this, 'generate_attachment_metadata_3' ) );
 		add_action( 'wp_ajax_generate_attachment_metadata_step_4', array( $this, 'generate_attachment_metadata_4' ) );
 		add_action( 'wp_ajax_generate_attachment_metadata_step_5', array( $this, 'generate_attachment_metadata_5' ) );
+		add_action( 'wp_ajax_generate_attachment_metadata_step_6', array( $this, 'generate_attachment_metadata_6' ) );
 		add_action( 'wp_ajax_import_attachment_metadata',          array( $this, 'import_attachment_metadata' ) );
 		add_action( 'wp_ajax_import_parents',                      array( $this, 'import_parents' ) );
 		add_action( 'wp_ajax_update_featured_images',              array( $this, 'update_featured_images' ) );
@@ -1129,7 +1130,7 @@ class cherry_data_manager_content_installer {
 	}
 
 	/**
-	 * Generate attachment meta. Step 4
+	 * Generate attachment meta. Step 5
 	 *
 	 * @since 1.0.0
 	 */
@@ -1143,6 +1144,26 @@ class cherry_data_manager_content_installer {
 		}
 
 		$range = $this->get_step_range( 5 );
+		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
+
+		exit('generate_attachment_metadata_step_6');
+	}
+
+	/**
+	 * Generate attachment meta. Step 4
+	 *
+	 * @since 1.0.0
+	 */
+	function generate_attachment_metadata_6() {
+		$this->verify_nonce();
+
+		do_action( 'cherry_data_manager_generate_attachment_metadata' );
+
+		if(empty($_SESSION['attachment_posts'])){
+			exit('import_attachment_metadata');
+		}
+
+		$range = $this->get_step_range( 6 );
 		$this->generate_attachment_meta_step( $range['from'], $range['to'] );
 
 		exit('import_attachment_metadata');
@@ -1167,7 +1188,10 @@ class cherry_data_manager_content_installer {
 		switch ( $step ) {
 
 			case 1:
-				$range['to'] = $by_step - 1;
+				$range['to'] = $by_step;
+				if ( $by_step > 3 ) {
+					$range['to'] = $range['to'] - 2;
+				}
 				break;
 
 			case 5:
@@ -1177,6 +1201,9 @@ class cherry_data_manager_content_installer {
 			default:
 				$range['from'] = $by_step*($step - 1) + 1;
 				$range['to']   = $by_step*$step;
+				if ( $by_step > 3 && 2 == $step ) {
+					$range['from'] = $range['from'] - 2;
+				}
 				break;
 
 		}
