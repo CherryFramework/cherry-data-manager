@@ -195,13 +195,16 @@ class cherry_dm_content_importer {
 
 		// Unzip package to working directory
 		$zip    = new PclZip( $package );
-		$result = $zip->extract( PCLZIP_OPT_BY_NAME, "sample_data/", PCLZIP_OPT_ADD_PATH, $working_dir, PCLZIP_OPT_REMOVE_PATH, "sample_data/"
+		$result = $zip->extract(
+			PCLZIP_OPT_BY_NAME, "sample_data/",
+			PCLZIP_OPT_ADD_PATH, $working_dir,
+			PCLZIP_OPT_REMOVE_PATH, "sample_data/"
 		);
 		//$result = unzip_file( $package, $working_dir );
 
 		// Once extracted, delete the package if required.
 		if ( $delete_package ) {
-			unlink($package);
+			unlink( $package );
 		}
 
 		if ( 0 == $result ) {
@@ -273,12 +276,15 @@ class cherry_dm_content_importer {
 
 		global $cherry_data_manager;
 
+		ob_start();
+
 		$response = array(
 			'type' => 'error'
 		);
 
 		if ( ! isset( $_SESSION['cherry_data']['sample'] ) ) {
 			$response['message'] = __( 'Can\'t find link to sample data', $cherry_data_manager->slug );
+			ob_clean();
 			wp_send_json( $response );
 		}
 
@@ -288,6 +294,7 @@ class cherry_dm_content_importer {
 
 		if ( ! $res ) {
 			$response['message'] = __( 'Can\'t connect to file system', $cherry_data_manager->slug );
+			ob_clean();
 			wp_send_json( $response );
 		}
 
@@ -296,6 +303,7 @@ class cherry_dm_content_importer {
 
 		$response['type']    = 'success';
 		$response['message'] = __( 'File imported', $cherry_data_manager->slug );
+		ob_clean();
 		wp_send_json( $response );
 
 	}

@@ -143,6 +143,8 @@ class cherry_data_manager_content_installer {
 
 		$this->verify_nonce();
 
+		ob_start();
+
 		$options_file = 'options.json';
 
 		$upload_dir = cherry_dm_get_upload_path();
@@ -158,6 +160,7 @@ class cherry_data_manager_content_installer {
 		$options = json_decode( $json, true );
 
 		if ( ! is_array($options) ) {
+			ob_clean();
 			exit( 'import_custom_tables' );
 		}
 
@@ -202,6 +205,7 @@ class cherry_data_manager_content_installer {
 		$_SESSION['files_to_remove'][] = $templates_zip;
 
 		if ( ! file_exists( $templates_zip ) ) {
+			ob_clean();
 			exit( 'import_custom_tables' );
 		}
 
@@ -210,6 +214,7 @@ class cherry_data_manager_content_installer {
 		$zip = new PclZip( $templates_zip );
 		$zip->extract( PCLZIP_OPT_ADD_PATH, $upload_base_dir . '/templates' );
 
+		ob_clean();
 		exit( 'import_custom_tables' );
 	}
 
