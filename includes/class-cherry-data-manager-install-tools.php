@@ -25,6 +25,8 @@ class Cherry_Data_Manager_Install_Tools {
 	 */
 	public $xml_file = null;
 
+	public $html_meta = null;
+
 	/**
 	 * Constructor for the class
 	 */
@@ -108,6 +110,52 @@ class Cherry_Data_Manager_Install_Tools {
 			return $data[$key];
 		}
 
+	}
+
+	/**
+	 * Add unserialized meta to prevent dropping HTML markup
+	 *
+	 * @param int    $post_id post ID
+	 * @param string $key     meta key
+	 * @param string $value   meta value
+	 */
+	public function fix_html_meta( $post_id, $key, $value ) {
+
+		// esc HTML meta
+		$value = preg_replace_callback(
+			'/(\"fetures-text\";s:)(\d+)(:\")(.*)(\";s:5:\"price\")/s',
+			array( $this, 'replace_html_meta' ),
+			$value
+		);
+
+		$value = maybe_unserialize( $value );
+		add_post_meta( $post_id, $key, $value );
+
+		if ( null != $this->html_meta ) {
+			$meta = get_post_meta( $post_id, $key, true );
+			$meta['fetures-text'] = $this->html_meta;
+			update_post_meta( $post_id, $key, $meta );
+		}
+
+	}
+
+	/**
+	 * Replace callback for HTML meta search
+	 *
+	 * @since  1.0.4
+	 * @param  array $matches
+	 * @return string
+	 */
+	public function replace_html_meta( $matches ) {
+
+		if ( empty( $matches[4] ) ) {
+			$this->html_meta = null;
+			return $matches[0];
+		}
+
+		$this->html_meta = $matches[4];
+
+		return $matches[1] . '0' . $matches[3] . $matches[5];
 	}
 
 }

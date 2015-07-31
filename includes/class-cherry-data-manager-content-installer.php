@@ -875,6 +875,11 @@ class cherry_data_manager_content_installer {
 					continue;
 				}
 
+				if ( '_cherry_services' == $key ) {
+					$this->tools->fix_html_meta( $new_post_id, $key, $meta['value'] );
+					continue;
+				}
+
 				// export gets meta straight from the DB so could have a serialized string
 				if ( ! $value ) {
 					$value = maybe_unserialize( $meta['value'] );
