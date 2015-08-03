@@ -2114,7 +2114,12 @@ class cherry_data_manager_content_installer {
 			return;
 		}
 
-		$fp = fopen($htaccess, 'a+');
+		ini_set( 'track_errors', 1 );
+		$fp = @fopen( $htaccess, 'a+' );
+
+		if ( ! empty( $php_errormsg ) ) {
+			return;
+		}
 
 		if (!$fp) {
 			return;
