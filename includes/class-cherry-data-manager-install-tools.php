@@ -158,4 +158,70 @@ class Cherry_Data_Manager_Install_Tools {
 		return $matches[1] . '0' . $matches[3] . $matches[5];
 	}
 
+	/**
+	 * Get file content via WP Filesystem API
+	 *
+	 * @since  1.0.4
+	 *
+	 * @param  string $file   file path
+	 * @param  bool   $remove remove file after installation finished
+	 * @return mixed
+	 */
+	public function get_contents( $file, $remove = true ) {
+
+		if ( ! $file ) {
+			return false;
+		}
+
+		global $cherry_data_manager;
+
+		$res = $cherry_data_manager->importer->fs_connect();
+
+		if ( ! $res ) {
+			return false;
+		}
+
+		global $wp_filesystem;
+
+		$file = str_replace( ABSPATH, $wp_filesystem->abspath(), $file );
+
+		if ( ! $wp_filesystem->exists( $file ) ) {
+			return false;
+		}
+
+		if ( true == $remove ) {
+			$_SESSION['files_to_remove'][] = $file;
+		}
+
+		return $wp_filesystem->get_contents( $file );
+
+	}
+
+	/**
+	 * Remove service files after installation finished
+	 *
+	 * @since  1.0.0
+	 * @return void
+	 */
+	public function clean_files() {
+
+		if ( empty( $_SESSION['files_to_remove'] ) ) {
+			return false;
+		}
+
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem ) {
+			return false;
+		}
+
+		foreach ( $_SESSION['files_to_remove'] as $file ) {
+			if ( $wp_filesystem->exists( $file ) ) {
+				$wp_filesystem->delete( $file );
+			}
+		}
+
+		unset( $_SESSION['files_to_remove'] );
+	}
+
 }

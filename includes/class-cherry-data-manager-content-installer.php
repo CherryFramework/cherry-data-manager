@@ -107,11 +107,9 @@ class cherry_data_manager_content_installer {
 
 		$ids_file = $upload_dir . 'rewrite-ids.json';
 
-		if ( file_exists($ids_file) ) {
+		$ids_data = $this->tools->get_contents( $ids_file );
 
-			$_SESSION['files_to_remove'][] = $ids_file;
-
-			$ids_data = file_get_contents( $ids_file );
+		if ( false !== $ids_data ) {
 
 			$ids_data = json_decode( $ids_data, true );
 			set_transient( $this->transients_prefix . 'ids_data', $ids_data, DAY_IN_SECONDS );
@@ -120,6 +118,7 @@ class cherry_data_manager_content_installer {
 				$menus = array_values( $ids_data['menus'] );
 				set_transient( $this->transients_prefix . 'menus', $menus, DAY_IN_SECONDS );
 			}
+
 		}
 
 		/**
@@ -146,16 +145,12 @@ class cherry_data_manager_content_installer {
 		ob_start();
 
 		$options_file = 'options.json';
+		$upload_dir   = cherry_dm_get_upload_path();
+		$json         = $this->tools->get_contents( $upload_dir . $options_file );
 
-		$upload_dir = cherry_dm_get_upload_path();
-
-		if ( !file_exists( $upload_dir . $options_file ) ) {
+		if ( false == $json ) {
 			exit('import_custom_tables');
 		}
-
-		$json = file_get_contents( $upload_dir . $options_file );
-
-		$_SESSION['files_to_remove'][] = $upload_dir . $options_file;
 
 		$options = json_decode( $json, true );
 
@@ -227,12 +222,11 @@ class cherry_data_manager_content_installer {
 
 		$tables_file = 'tables.json';
 		$upload_dir  = cherry_dm_get_upload_path();
-		if ( !file_exists( $upload_dir . $tables_file ) ) {
+		$json        = $this->tools->get_contents( $upload_dir . $tables_file );
+
+		if ( false == $json ) {
 			exit('import_categories');
 		}
-		$json = file_get_contents( $upload_dir . $tables_file );
-
-		$_SESSION['files_to_remove'][] = $upload_dir . $tables_file;
 
 		$tables = json_decode( $json, true );
 		if ( ! is_array( $tables ) || empty( $tables ) ) {
@@ -1432,6 +1426,11 @@ class cherry_data_manager_content_installer {
 		$this->import_end();
 	}
 
+	function test_cb( $matches ) {
+		var_dump( $matches );
+		return $matches[0];
+	}
+
 	/**
 	 * Import widgets and set necessary settings
 	 *
@@ -1457,21 +1456,24 @@ class cherry_data_manager_content_installer {
 		}
 
 		$upload_dir = cherry_dm_get_upload_path();
+		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
 
-		if ( !file_exists( $upload_dir . $widgets_file ) ) {
+		if ( false == $json ) {
 			exit('import_end');
 		}
-
-		$json = file_get_contents( $upload_dir . $widgets_file );
-
-		$_SESSION['files_to_remove'][] = $upload_dir . $widgets_file;
 
 		$upload_dir = wp_upload_dir();
 		$upload_url = $upload_dir['url'] . '/';
 
 		$json = preg_replace(
-			'/http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/',
-			trim( json_encode( $upload_url .'$1' ), "\"" ),
+			array(
+				'/http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/',
+				'/\[template_url\].{2}wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/'
+			),
+			array(
+				trim( json_encode( $upload_url . '$1' ), "\"" ),
+				trim( json_encode( str_replace( get_bloginfo( 'url' ), '[template_url]', $upload_url ) . '$1' ), "\"" )
+			),
 			$json
 		);
 
@@ -1572,14 +1574,7 @@ class cherry_data_manager_content_installer {
 			 */
 			do_action( 'cherry_data_manager_install_complete' );
 
-			if ( ! empty( $_SESSION['files_to_remove'] ) ) {
-				foreach ( $_SESSION['files_to_remove'] as $file ) {
-					if ( file_exists( $file ) ) {
-						unlink( $file );
-					}
-				}
-				unset( $_SESSION['files_to_remove'] );
-			}
+			$this->tools->clean_files();
 
 			exit( 'import_end' );
 		} else {
