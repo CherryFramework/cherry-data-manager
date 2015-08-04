@@ -828,7 +828,10 @@ class cherry_data_manager_content_installer {
 
 		$_SESSION['meta_to_rewrite'] = array();
 
-		$rewrite_meta_fields = apply_filters( 'cherry_data_manager_rewrite_meta', array() );
+		$rewrite_meta_fields = apply_filters(
+			'cherry_data_manager_rewrite_meta',
+			array( '_cherry_portfolio' => 'portfolio-gallery-attachments-ids' )
+		);
 
 		foreach ( $_SESSION['processed_posts'] as $old_post_id => $new_post_id ) {
 
@@ -851,8 +854,9 @@ class cherry_data_manager_content_installer {
 				if ( is_array( $rewrite_meta_fields ) && array_key_exists( $key, $rewrite_meta_fields ) ) {
 
 					if ( false !== $rewrite_meta_fields[$key] ) {
+						$value = maybe_unserialize( $meta['value'] );
 						$inner_key = $rewrite_meta_fields[$key];
-						$val       = ! empty( $meta['value'][$inner_key] ) ? $meta['value'][$inner_key] : false;
+						$val       = ( is_array( $value ) && ! empty( $value[$inner_key] ) ) ? $value[$inner_key] : false;
 					} else {
 						$inner_key = false;
 						$val       = $meta['value'];
@@ -1361,9 +1365,9 @@ class cherry_data_manager_content_installer {
 				$values     = isset( $meta['val'] ) ? explode( ',', $meta['val'] ) : array();
 				$new_values = $this->remap_img_ids($values);
 				$new_values = implode( ',', $new_values );
-				if ( false !== $meta['key_inner'] ) {
+				if ( false !== $meta['inner_key'] ) {
 					$old_meta = get_post_meta( $post_id, $meta['key'], true );
-					$new_meta = array_merge( $old_meta, array( $meta['key_inner'] => $new_values ) );
+					$new_meta = array_merge( $old_meta, array( $meta['inner_key'] => $new_values ) );
 					update_post_meta( $post_id, $meta['key'], $new_meta );
 				} else {
 					update_post_meta( $post_id, $meta['key'], $new_values );
