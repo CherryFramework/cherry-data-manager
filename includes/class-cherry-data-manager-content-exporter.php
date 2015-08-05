@@ -110,7 +110,7 @@ class cherry_dm_content_exporter {
 
 		$exclude_folder = apply_filters(
 			'cherry_data_manager_exclude_folder_from_export',
-			array( 'woocommerce_uploads', 'templates', 'wc-logs' )
+			array( 'woocommerce_uploads', 'templates', 'wc-logs', '.git' )
 		);
 
 		$response = array(
