@@ -75,7 +75,8 @@ class Cherry_Data_Manager_Install_Tools {
 		$cut_date_upload_dir   = '<![CDATA[' . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 		$cut_date_upload_dir_2 = "\"" . substr($upload_dir, strpos($upload_dir, 'wp-content/uploads') + 19, strlen( $upload_dir ) - 1 );
 
-		$pattern            = '/[\"\']http:.{2}(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/i';
+		$pattern = '/[\"\']http:.{2}(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png|mp4|webm|ogv))[\"\']/i';
+
 		$patternCDATA       = '/<!\[CDATA\[\d{4}\/\d{2}/i';
 		$pattern_meta_value = '/("|\')\d{4}\/\d{2}/i';
 
