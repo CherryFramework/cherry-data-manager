@@ -2,7 +2,7 @@
 /**
  * @package   cherry_data_manager
  * @author    Cherry Team
- * @license   GPL-2.0+
+ * @license   GPL-3.0+
  *
  * @wordpress-plugin
  * Plugin Name:       Cherry Data Manager
@@ -12,8 +12,8 @@
  * Author:            Cherry Team
  * Author URI:        http://www.cherryframework.com/
  * Text Domain:       cherry-content-manager
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License:           GPL-3.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
  * Domain Path:       /languages
  *
  * Import/export site content, uploads, widgets and some options
