@@ -85,7 +85,13 @@ class cherry_dm_content_importer {
 			return false;
 		}
 
-		if ( ! WP_Filesystem( $credentials, $directories[0], $allow_relaxed_file_ownership ) ) {
+		if ( empty( $directories ) ) {
+			$dirs = $directories;
+		} else {
+			$dirs = $directories[0];
+		}
+
+		if ( ! WP_Filesystem( $credentials, $dirs, $allow_relaxed_file_ownership ) ) {
 			$error = true;
 			if ( is_object($wp_filesystem) && $wp_filesystem->errors->get_error_code() ) {
 				$error = $wp_filesystem->errors;
