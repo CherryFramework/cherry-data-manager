@@ -44,6 +44,10 @@ class cherry_data_manager_content_installer {
 			session_start();
 		}
 
+		if ( ! isset( $_SESSION['files_to_remove'] ) ) {
+			$_SESSION['files_to_remove'] = array();
+		}
+
 		add_action( 'wp_ajax_import_xml',                          array( $this, 'import_xml' ) );
 		add_action( 'wp_ajax_import_options',                      array( $this, 'import_options' ) );
 		add_action( 'wp_ajax_import_custom_tables',                array( $this, 'import_custom_tables' ) );
@@ -94,11 +98,16 @@ class cherry_data_manager_content_installer {
 			exit('error');
 		}
 
+		$_SESSION['files_to_remove'][] = $upload_dir . $xml_file;
+
 		$this->tools->add_xml_file( $upload_dir . $xml_file );
 
 		$ids_file = $upload_dir . 'rewrite-ids.json';
 
 		if ( file_exists($ids_file) ) {
+
+			$_SESSION['files_to_remove'][] = $ids_file;
+
 			$ids_data = file_get_contents( $ids_file );
 
 			$ids_data = json_decode( $ids_data, true );
@@ -140,6 +149,8 @@ class cherry_data_manager_content_installer {
 		}
 
 		$json = file_get_contents( $upload_dir . $options_file );
+
+		$_SESSION['files_to_remove'][] = $upload_dir . $options_file;
 
 		$options = json_decode( $json, true );
 
@@ -185,6 +196,8 @@ class cherry_data_manager_content_installer {
 		$wp_upload       = wp_upload_dir();
 		$upload_base_dir = $wp_upload['basedir'];
 
+		$_SESSION['files_to_remove'][] = $templates_zip;
+
 		if ( ! file_exists( $templates_zip ) ) {
 			exit( 'import_custom_tables' );
 		}
@@ -211,6 +224,8 @@ class cherry_data_manager_content_installer {
 		}
 
 		$json = file_get_contents( $upload_dir . $tables_file );
+
+		$_SESSION['files_to_remove'][] = $upload_dir . $tables_file;
 
 		$tables = json_decode( $json, true );
 
@@ -1373,6 +1388,8 @@ class cherry_data_manager_content_installer {
 
 		$json = file_get_contents( $upload_dir . $widgets_file );
 
+		$_SESSION['files_to_remove'][] = $upload_dir . $widgets_file;
+
 		$upload_dir = wp_upload_dir();
 		$upload_url = $upload_dir['url'] . '/';
 
@@ -1478,6 +1495,15 @@ class cherry_data_manager_content_installer {
 			 * Hook fires after successfull demo content installation
 			 */
 			do_action( 'cherry_data_manager_install_complete' );
+
+			if ( ! empty( $_SESSION['files_to_remove'] ) ) {
+				foreach ( $_SESSION['files_to_remove'] as $file ) {
+					if ( file_exists( $file ) ) {
+						unlink( $file );
+					}
+				}
+				unset( $_SESSION['files_to_remove'] );
+			}
 
 			exit( 'import_end' );
 		} else {

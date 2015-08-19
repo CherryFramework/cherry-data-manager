@@ -164,11 +164,9 @@ jQuery(document).ready(function() {
 			jQuery('p .upload_status_text', $info_holder).html(cherry_dm_import_texts['uploaded_status_text_1']);
 			$not_load_file.addClass('hidden_');
 			$upload_status.addClass('upload_done');
-			$continue_install.removeClass('not_active').on('click', function(event){
+			$continue_install.removeClass('not_active').on('click', function(event) {
 
 				event.preventDefault();
-				var event = jQuery.Event('cherry_data_manager_start_install');
-				jQuery(document).trigger( event );
 
 				cherry_dm_prepare_to_install();
 
@@ -182,6 +180,10 @@ jQuery(document).ready(function() {
 	}
 
 	function cherry_dm_prepare_to_install() {
+
+		var event = jQuery.Event('cherry_data_manager_start_install');
+		jQuery(document).trigger( event );
+
 		// disable file uploading
 		$drop_zone.off();
 		$upload_button.off();
