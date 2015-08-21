@@ -1488,60 +1488,8 @@ class cherry_data_manager_content_installer {
 		$json_data    = json_decode( $json, true );
 		$sidebar_data = $json_data[0];
 		$widget_data  = $json_data[1];
-		$rules_data   = isset($json_data[2])? $json_data[2] : array();
 
-		// get option value
-		$themename    = 'cherry';
-		$options_type = get_option( $themename . '_widget_rules_type' );
-		$options      = get_option( $themename . '_widget_rules' );
-		$custom_class = get_option( $themename . '_widget_custom_class' );
-		$responsive   = get_option( $themename . '_widget_responsive' );
-		$users        = get_option( $themename . '_widget_users' );
-
-		// if this option is set at first time
-		if ( !is_array($options_type) ) {
-			$options_type = array();
-		}
-		// if this option is set at first time
-		if ( !is_array($options) ) {
-			$options = array();
-		}
-		// if this responsive is set at first time
-		if ( !is_array($responsive) ) {
-			$responsive = array();
-		}
-		// if this users is set at first time
-		if ( !is_array($users) ) {
-			$users = array();
-		}
-
-		if( !empty( $rules_data ) && is_array( $rules_data ) ) {
-
-			$new = array('widget_responsive');
-
-			foreach($rules_data as $key => $value) {
-				foreach ($value as $val) {
-					$new[$key] = $val;
-				}
-			}
-
-			$new['widget_responsive'] = isset($new['widget_responsive']) ? $new['widget_responsive'] : array() ;
-
-			$options_type_new = array_merge($options_type, $new['widget_rules_type']);
-			$options_new      = array_merge($options, $new['widget_rules']);
-			$custom_class_new = $new['widget_custom_class'];
-			$responsive_new   = array_merge($responsive, $new['widget_responsive']);
-			$users_new        = array_merge($users, $new['widget_users']);
-
-			// update option
-			update_option( $themename . '_widget_rules_type', $options_type_new );
-			update_option( $themename . '_widget_rules', $options_new );
-			update_option( $themename . '_widget_custom_class', $custom_class_new );
-			update_option( $themename . '_widget_responsive' . $key, $responsive_new );
-			update_option( $themename . '_widget_users', $users_new );
-		}
-
-		if ( !is_array($widget_data) ) {
+		if ( ! is_array( $widget_data ) ) {
 			exit('import_end');
 		}
 
@@ -1600,74 +1548,18 @@ class cherry_data_manager_content_installer {
 
 		$sidebars_data    = $import_array[0];
 		$widget_data      = $import_array[1];
-		$current_sidebars = get_option( 'sidebars_widgets' );
 		$new_widgets      = array();
 		$inactive_widgets = array();
 
-		foreach ( $current_sidebars as $import_sidebars => $import_sidebar ){
-			if ( is_array($import_sidebar) ) {
-				array_push($import_sidebar, array());
-			}
+		$sidebars_data['wp_inactive_widgets'] = array();
+		update_option( 'sidebars_widgets', $sidebars_data );
+
+		foreach ( $widget_data as $title => $content ) {
+			array_walk_recursive( $content, array( $this, 'upd_mega_parents' ) );
+			update_option( 'widget_' . $title, $content );
 		}
 
-		foreach ( $sidebars_data as $import_sidebar => $import_widgets ) {
-
-			$current_sidebars[$import_sidebar] = array();
-
-			foreach ( $import_widgets as $import_widget ) {
-
-				$title               = trim( substr( $import_widget, 0, strrpos( $import_widget, '-' ) ) );
-				$index               = trim( substr( $import_widget, strrpos( $import_widget, '-' ) + 1 ) );
-				$current_widget_data = get_option( 'widget_' . $title );
-				$new_widget_name     = $this->get_new_widget_name( $title, $index );
-				$new_index           = trim( substr( $new_widget_name, strrpos( $new_widget_name, '-' ) + 1 ) );
-
-				if ( !empty( $new_widgets[ $title ] ) && is_array( $new_widgets[$title] ) ) {
-					while ( array_key_exists( $new_index, $new_widgets[$title] ) ) {
-						$new_index++;
-					}
-				}
-
-				$current_sidebars[$import_sidebar][] = $title . '-' . $new_index;
-
-				if ( array_key_exists( $title, $new_widgets ) ) {
-
-					$new_widgets[$title][$new_index] = $widget_data[$title][$index];
-					$multiwidget = $new_widgets[$title]['_multiwidget'];
-					unset( $new_widgets[$title]['_multiwidget'] );
-					$new_widgets[$title]['_multiwidget'] = $multiwidget;
-
-				} else {
-
-					$current_widget_data[$new_index] = $widget_data[$title][$index];
-					$current_multiwidget = array_key_exists('_multiwidget', $current_widget_data ) ? $current_widget_data['_multiwidget'] : null ;
-					$new_multiwidget = $widget_data[$title]['_multiwidget'];
-					$multiwidget = ($current_multiwidget != $new_multiwidget) ? $current_multiwidget : 1;
-					unset( $current_widget_data['_multiwidget'] );
-					$current_widget_data['_multiwidget'] = $multiwidget;
-					$new_widgets[$title] = $current_widget_data;
-
-				}
-			}
-		}
-
-		if ( isset( $new_widgets ) && isset( $current_sidebars ) ) {
-
-			if(!empty($inactive_widgets)){
-				$current_sidebars['wp_inactive_widgets'] = $inactive_widgets;
-			}
-
-			update_option( 'sidebars_widgets', $current_sidebars );
-
-			foreach ( $new_widgets as $title => $content ) {
-				array_walk_recursive( $content, array( $this, 'upd_mega_parents' ) );
-				update_option( 'widget_' . $title, $content );
-			}
-
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	/**
