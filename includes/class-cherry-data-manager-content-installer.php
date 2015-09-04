@@ -191,23 +191,9 @@ class cherry_data_manager_content_installer {
 		do_action( 'cherry_data_manager_import_options' );
 
 		/**
-		 * Also we unpack template files on this step (if templates.zip was uploaded)
+		 * Also we unpack separate folders on this step (if templates.zip was uploaded)
 		 */
-		$templates_zip   = $upload_dir . 'templates.zip';
-		$wp_upload       = wp_upload_dir();
-		$upload_base_dir = $wp_upload['basedir'];
-
-		$_SESSION['files_to_remove'][] = $templates_zip;
-
-		if ( ! file_exists( $templates_zip ) ) {
-			ob_clean();
-			exit( 'import_custom_tables' );
-		}
-
-		include_once( ABSPATH . '/wp-admin/includes/class-pclzip.php' );
-
-		$zip = new PclZip( $templates_zip );
-		$zip->extract( PCLZIP_OPT_ADD_PATH, $upload_base_dir . '/templates' );
+		$this->tools->unpack_dirs( $upload_dir );
 
 		ob_clean();
 		exit( 'import_custom_tables' );

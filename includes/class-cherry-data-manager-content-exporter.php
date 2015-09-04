@@ -110,7 +110,7 @@ class cherry_dm_content_exporter {
 
 		$exclude_folder = apply_filters(
 			'cherry_data_manager_exclude_folder_from_export',
-			array( 'woocommerce_uploads', 'templates', 'wc-logs', '.git' )
+			array( 'woocommerce_uploads', 'cherry-style-switcher', 'templates', 'wc-logs', '.git' )
 		);
 
 		$response = array(
@@ -129,7 +129,7 @@ class cherry_dm_content_exporter {
 		// delete sample data zip if already exist
 		$this->delete_file( $zip_name );
 
-		$this->pack_templates( $upload_base_dir );
+		$this->pack_folders( $upload_base_dir );
 
 		if ( is_dir( $upload_base_dir ) ) {
 			$file_string = $this->scan_dir( $upload_base_dir, $exclude_folder, $exclude_files );
@@ -313,24 +313,41 @@ class cherry_dm_content_exporter {
 	 *
 	 * @since  1.0.0
 	 */
-	public function pack_templates( $upload_base_dir ) {
+	public function pack_folders( $upload_base_dir ) {
 
-		$templates_dir = $upload_base_dir . '/templates';
+		$dirs = apply_filters(
+			'cherry_data_manager_packed_dirs',
+			array( 'templates', 'cherry-style-switcher' )
+		);
+
+		foreach ( $dirs as $dir) {
+			$this->pack_single_folder( $dir, $upload_base_dir );
+		}
+
+	}
+
+	/**
+	 * Pack single dir
+	 *
+	 * @since 1.0.6
+	 */
+	public function pack_single_folder( $dir, $upload_base_dir ) {
+		$packed_dir = $upload_base_dir . '/' . $dir;
 
 		// Check if templates dir exist
-		if ( ! file_exists( $templates_dir ) ) {
+		if ( ! file_exists( $packed_dir ) ) {
 			return false;
 		}
 
-		// scan templates dir
-		$templates = $this->scan_dir( $templates_dir, array(), array() );
-		// pack templates to zip
-		$zip_name = $upload_base_dir . '/templates.zip';
-		// delete templates file if already exists
+		// scan dir
+		$files = $this->scan_dir( $packed_dir, array(), array() );
+		// pack files to zip
+		$zip_name = $upload_base_dir . '/' . $dir . '.zip';
+		// delete file if already exists
 		$this->delete_file( $zip_name );
 
 		$zip    = new PclZip( $zip_name );
-		$result = $zip->create( $templates, PCLZIP_OPT_REMOVE_PATH, $templates_dir );
+		$result = $zip->create( $files, PCLZIP_OPT_REMOVE_PATH, $packed_dir );
 
 	}
 

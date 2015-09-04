@@ -225,4 +225,35 @@ class Cherry_Data_Manager_Install_Tools {
 		unset( $_SESSION['files_to_remove'] );
 	}
 
+	/**
+	 * unpack ziped folders
+	 *
+	 * @since 1.0.6
+	 */
+	public function unpack_dirs( $upload_dir ) {
+
+		$unpack_dirs = apply_filters(
+			'cherry_data_manager_packed_dirs',
+			array( 'templates', 'cherry-style-switcher' )
+		);
+
+		include_once( ABSPATH . '/wp-admin/includes/class-pclzip.php' );
+
+		foreach ( $unpack_dirs as $dir ) {
+			$zip_file        = $upload_dir . $dir . '.zip';
+			$wp_upload       = wp_upload_dir();
+			$upload_base_dir = $wp_upload['basedir'];
+
+			if ( ! file_exists( $zip_file ) ) {
+				continue;
+			}
+
+			$_SESSION['files_to_remove'][] = $zip_file;
+
+			$zip = new PclZip( $zip_file );
+			$zip->extract( PCLZIP_OPT_ADD_PATH, $upload_base_dir . '/' . $dir );
+		}
+
+	}
+
 }
