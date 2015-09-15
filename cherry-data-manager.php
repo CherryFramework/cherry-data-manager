@@ -8,7 +8,7 @@
  * Plugin Name:       Cherry Data Manager
  * Plugin URI:        http://www.cherryframework.com/
  * Description:       Import/export site content, uploads, widgets and some options
- * Version:           1.0.6
+ * Version:           1.1.0
  * Author:            Cherry Team
  * Author URI:        http://www.cherryframework.com/
  * Text Domain:       cherry-content-manager
@@ -57,6 +57,14 @@ if ( !class_exists('cherry_data_manager') ) {
 		 * @var string
 		 */
 		public $export_page = 'cherry-content-export';
+
+		/**
+		 * Data manager page slug
+		 *
+		 * @since 1.1.0
+		 * @var string
+		 */
+		public $data_page = 'cherry-data-manager';
 
 		/**
 		 * Sets up needed actions/filters for the plugin to initialize.
