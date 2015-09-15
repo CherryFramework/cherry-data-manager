@@ -22,14 +22,22 @@ if ( !class_exists( 'cherry_data_manager_interface' ) ) {
 	class cherry_data_manager_interface {
 
 		/**
-		 * Array of
+		 * Array of Cherry Data Manager pages
 		 * @var array
 		 */
 		public $pages = array();
 
+		/**
+		 * Trigger to define if pages already added
+		 * @var boolean
+		 */
+		public $added = false;
+
 		function __construct() {
 			// Add the withard page and menu item.
 			add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
+
+			global $cherry_data_manager;
 
 			$this->pages = apply_filters(
 				'cherry_data_manager_pages',
@@ -48,11 +56,11 @@ if ( !class_exists( 'cherry_data_manager_interface' ) ) {
 						'menu_slug'  => $cherry_data_manager->export_page,
 						'function'   => array( $this, 'show_admin_pages' ),
 					),
-					$this->data_page => array(
+					$cherry_data_manager->data_page => array(
 						'page_title' => __( 'Cherry Data Manager', $cherry_data_manager->slug ),
 						'menu_title' => __( 'Cherry Data Manager', $cherry_data_manager->slug ),
 						'capability' => 'manage_options',
-						'menu_slug'  => $this->data_page,
+						'menu_slug'  => $cherry_data_manager->data_page,
 						'function'   => array( $this, 'show_admin_pages' ),
 					),
 				)
@@ -68,20 +76,27 @@ if ( !class_exists( 'cherry_data_manager_interface' ) ) {
 		public function add_admin_pages() {
 
 			global $cherry_data_manager;
-			// add content import page
-			add_management_page(
 
-			);
-			// add content export page
-			add_management_page(
-				__( 'Cherry Content Export', $cherry_data_manager->slug ),
-				__( 'Cherry Export', $cherry_data_manager->slug ),
-				'manage_options',
-				$cherry_data_manager->export_page,
-				array( $this, 'show_admin_pages' )
-			);
-			// add management
-			add_management_page( __() );
+			if ( empty( $this->pages ) ) {
+				return;
+			}
+
+			do_action( 'cherry_data_manager_add_pages', $this );
+
+			if ( true === $this->added ) {
+				return;
+			}
+
+			foreach ( $this->pages as $page_id => $data ) {
+				add_management_page(
+					$data['page_title'],
+					$data['menu_title'],
+					$data['capability'],
+					$data['menu_slug'],
+					$data['function']
+				);
+			}
+
 		}
 
 		/**
