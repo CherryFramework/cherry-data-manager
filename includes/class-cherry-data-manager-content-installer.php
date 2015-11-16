@@ -1457,8 +1457,8 @@ class cherry_data_manager_content_installer {
 
 		$json = preg_replace(
 			array(
-				'/http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/',
-				'/\[template_url\].{2}wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))/'
+				'/http:.[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png|mp4|ogg|webm))/',
+				'/\[template_url\].{2}wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png|mp4|ogg|webm))/'
 			),
 			array(
 				trim( json_encode( $upload_url . '$1' ), "\"" ),
