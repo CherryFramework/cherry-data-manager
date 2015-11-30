@@ -256,4 +256,112 @@ class Cherry_Data_Manager_Install_Tools {
 
 	}
 
+	/**
+	 * Set meta to rewitten ID values
+	 *
+	 * @since  1.0.8
+	 * @param  array  $meta       rewritten meta field data.
+	 * @param  string $new_values rewritten id's values.
+	 * @param  array  $old_meta   existing meta array.
+	 * @return array
+	 */
+	public function update_rewritten_meta( $meta, $new_values, $old_meta ) {
+
+		if ( ! is_array( $meta['inner_key'] ) ) {
+			return array_merge( $old_meta, array( $meta['inner_key'] => $new_values ) );
+		}
+
+		reset( $meta['inner_key'] );
+		$new_key        = key( $meta['inner_key'] );
+		$new_key_nested = $meta['inner_key'][ $new_key ];
+
+		if ( isset( $old_meta[ $new_key ][ $new_key_nested ] ) ) {
+			$old_meta[ $new_key ][ $new_key_nested ] = $new_values;
+		}
+
+		return $old_meta;
+	}
+
+	/**
+	 * Prepare meta field to rewrite ids
+	 *
+	 * @since  1.0.8
+	 * @param  array $meta                current meta field.
+	 * @param  array $rewrite_meta_fields array of meta fields to rewrite
+	 * @return array
+	 */
+	public function prepare_meta_to_rewrite( $meta, $rewrite_meta_fields ) {
+
+		$defaults = array(
+			'key'       => '',
+			'inner_key' => false,
+			'val'       => '',
+		);
+
+		if ( false === $rewrite_meta_fields[ $meta['key'] ] ) {
+			return array_merge(
+				$defaults,
+				array(
+					'key' => $meta['key'],
+					'val' => $meta['value'],
+				)
+			);
+		}
+
+		$value = maybe_unserialize( $meta['value'] );
+
+		return array_merge(
+			$defaults,
+			array(
+				'key'       => $meta['key'],
+				'inner_key' => $rewrite_meta_fields[ $meta['key'] ],
+				'val'       => $this->get_val_by_key( $value, $rewrite_meta_fields[ $meta['key'] ] ),
+			)
+		);
+
+	}
+
+	/**
+	 * Recursive get inner meta value by key
+	 *
+	 * @since  1.0.8
+	 * @param  array $value meta value.
+	 * @param  mixed $key   string or array nnested key.
+	 * @return mixed
+	 */
+	public function get_val_by_key( $value, $key ) {
+
+		if ( ! is_array( $key ) ) {
+			return isset( $value[ $key ] ) ? $value[ $key ] : false;
+		}
+
+		reset( $key );
+		$new_key    = key( $key );
+		$new_value  = isset( $new_value[ $key ] ) ? $new_value[ $key ] : array();
+		$search_key = $search_key[ $new_key ];
+
+		return $this->get_val_by_key( $new_value, $search_key );
+
+	}
+
+	/**
+	 * Get attachment ID by URL
+	 *
+	 * @since  1.0.8
+	 * @param  string $url image URL
+	 * @return int|bool false
+	 */
+	public function get_id_by_url( $url ) {
+
+		global $wpdb;
+		$url = esc_url( stripslashes( $url ) );
+		$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid=%s", $url );
+		$id = $wpdb->get_var( $query );
+
+		if ( ! $id ) {
+			return false;
+		}
+
+		return $id;
+	}
 }

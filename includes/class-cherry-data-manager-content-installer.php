@@ -154,7 +154,7 @@ class cherry_data_manager_content_installer {
 
 		$options = json_decode( $json, true );
 
-		if ( ! is_array($options) ) {
+		if ( ! is_array( $options ) ) {
 			ob_clean();
 			exit( 'import_custom_tables' );
 		}
@@ -839,20 +839,11 @@ class cherry_data_manager_content_installer {
 
 				if ( is_array( $rewrite_meta_fields ) && array_key_exists( $key, $rewrite_meta_fields ) ) {
 
-					if ( false !== $rewrite_meta_fields[$key] ) {
-						$value = maybe_unserialize( $meta['value'] );
-						$inner_key = $rewrite_meta_fields[$key];
-						$val       = ( is_array( $value ) && ! empty( $value[$inner_key] ) ) ? $value[$inner_key] : false;
-					} else {
-						$inner_key = false;
-						$val       = $meta['value'];
-					}
-
-					$_SESSION['meta_to_rewrite'][$new_post_id] = array(
-						'key'       => $key,
-						'inner_key' => $inner_key,
-						'val'       => $val
+					$_SESSION['meta_to_rewrite'][ $new_post_id ] = $this->tools->prepare_meta_to_rewrite(
+						$meta,
+						$rewrite_meta_fields
 					);
+
 				}
 
 				if ( ! $key || '_edit_last' == $key || '_wp_attachment_metadata' == $key ) {
@@ -1327,7 +1318,7 @@ class cherry_data_manager_content_installer {
 			}
 		}
 
-		exit('update_featured_images');
+		exit( 'update_featured_images' );
 	}
 
 	/**
@@ -1351,24 +1342,27 @@ class cherry_data_manager_content_installer {
 				$values     = isset( $meta['val'] ) ? explode( ',', $meta['val'] ) : array();
 				$new_values = $this->remap_img_ids($values);
 				$new_values = implode( ',', $new_values );
+
 				if ( false !== $meta['inner_key'] ) {
 					$old_meta = get_post_meta( $post_id, $meta['key'], true );
-					$new_meta = array_merge( $old_meta, array( $meta['inner_key'] => $new_values ) );
+					$new_meta = $this->tools->update_rewritten_meta( $meta, $new_values, $old_meta );
+					//$new_meta = array_merge( $old_meta, array( $meta['inner_key'] => $new_values ) );
 					update_post_meta( $post_id, $meta['key'], $new_meta );
 				} else {
 					update_post_meta( $post_id, $meta['key'], $new_values );
 				}
+
 			}
 		}
 
-		if ( empty($featured_images) ) {
+		if ( empty( $featured_images ) ) {
 			exit('update_attachment');
 		}
 
 		// cycle through posts that have a featured image
 		foreach ( $featured_images as $post_id => $value ) {
 
-			if ( !isset( $_SESSION['processed_posts'][$value] ) ) {
+			if ( ! isset( $_SESSION['processed_posts'][$value] ) ) {
 				continue;
 			}
 
@@ -1396,7 +1390,7 @@ class cherry_data_manager_content_installer {
 
 		global $wpdb;
 
-		$url_remap = isset($_SESSION['url_remap']) ? $_SESSION['url_remap'] : array();
+		$url_remap = isset( $_SESSION['url_remap'] ) ? $_SESSION['url_remap'] : array();
 
 		// make sure we do the longest urls first, in case one is a substring of another
 		uksort( $url_remap, array( $this, 'sort_url' ) );
@@ -1433,6 +1427,7 @@ class cherry_data_manager_content_installer {
 		do_action( 'cherry_plugin_import_json' );
 
 		$this->remap_option_ids();
+		$this->remap_slider_ids();
 
 		$widgets_file = 'widgets.json';
 
@@ -1521,6 +1516,62 @@ class cherry_data_manager_content_installer {
 	}
 
 	/**
+	 * Remap slider images id's
+	 *
+	 * @since  1.0.8
+	 * @return void|bool false
+	 */
+	public function remap_slider_ids() {
+
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'mpsl_slides';
+
+		$slides = $wpdb->get_results(
+			"
+			SELECT *
+			FROM $table
+			"
+		);
+
+		if ( ! is_array( $slides ) ) {
+			return false;
+		}
+
+		foreach ( $slides as $slide ) {
+
+			if ( ! isset( $slide->options ) ) {
+				continue;
+			}
+
+			$slide_opt = json_decode( $slide->options, true );
+
+			if ( ! isset( $slide_opt['bg_image_id'] ) ) {
+				continue;
+			}
+
+			$new_id = $this->remap_img_ids( array( $slide_opt['bg_image_id'] ) );
+
+			if ( empty( $new_id ) ) {
+				continue;
+			}
+
+			$slide_opt['bg_image_id'] = $new_id[0];
+
+			$slide_opt = json_encode( $slide_opt );
+
+			$wpdb->update(
+				$table,
+				array( 'options' => $slide_opt ),
+				array( 'id' => $slide->id ),
+				array( '%s' ),
+				array( '%d' )
+			);
+		}
+
+	}
+
+	/**
 	 * parse widgets data
 	 *
 	 * @since 1.0.0
@@ -1528,7 +1579,7 @@ class cherry_data_manager_content_installer {
 	 */
 	public function parse_widgets_data( $import_array ) {
 
-		if ( !is_array($import_array) ) {
+		if ( ! is_array( $import_array ) ) {
 			return false;
 		}
 
@@ -1577,7 +1628,7 @@ class cherry_data_manager_content_installer {
 		$all_widget_array = array();
 
 		foreach ( $current_sidebars as $sidebar => $widgets ) {
-			if ( !empty( $widgets ) && is_array( $widgets ) && $sidebar != 'wp_inactive_widgets' ) {
+			if ( ! empty( $widgets ) && is_array( $widgets ) && $sidebar != 'wp_inactive_widgets' ) {
 				foreach ( $widgets as $widget ) {
 					$all_widget_array[] = $widget;
 				}
@@ -1600,15 +1651,15 @@ class cherry_data_manager_content_installer {
 	 */
 	public function new_id_to_option( $old_id, $new_id, $ids_data ) {
 
-		if ( empty($ids_data) ) {
+		if ( empty( $ids_data ) ) {
 			return;
 		}
 
-		if ( !isset($ids_data[$old_id]) ) {
+		if ( ! isset( $ids_data[ $old_id ] ) ) {
 			return;
 		}
 
-		foreach ( $ids_data[$old_id] as $option_name ) {
+		foreach ( $ids_data[ $old_id ] as $option_name ) {
 			update_option( $option_name, $new_id );
 		}
 
@@ -1619,8 +1670,8 @@ class cherry_data_manager_content_installer {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @param  array  $old_ids  old ID's array
-	 * @return array  $old_ids  new ID's array
+	 * @param  array $old_ids old ID's array
+	 * @return array $old_ids new ID's array
 	 */
 	function remap_img_ids( $old_ids ) {
 
@@ -1631,12 +1682,17 @@ class cherry_data_manager_content_installer {
 		}
 
 		foreach ( $old_ids as $id ) {
-			$new_ids[] = isset( $_SESSION['processed_posts'][$id] ) ? $_SESSION['processed_posts'][$id] : false;
+			$new_ids[] = isset( $_SESSION['processed_posts'][ $id ] ) ? $_SESSION['processed_posts'][ $id ] : false;
 		}
 
 		return $new_ids;
 	}
 
+	/**
+	 * Remap image ID's in theme options to new
+	 *
+	 * @return void|null
+	 */
 	function remap_option_ids() {
 
 		if ( ! function_exists( 'cherry_get_option' ) ) {
@@ -1646,9 +1702,11 @@ class cherry_data_manager_content_installer {
 		$remap_options = apply_filters(
 			'cherry_data_manager_rewrite_options',
 			array(
-				'logo-image-path'        => 'logo-subsection',
-				'footer-logo-image-path' => 'footer-logo-subsection',
-				'general-favicon'        => 'general-section'
+				'logo-image-path'         => 'logo-subsection',
+				'footer-logo-image-path'  => 'footer-logo-subsection',
+				'general-favicon'         => 'general-section',
+				'header-background:image' => 'header-section',
+				'footer-background:image' => 'footer-section',
 			)
 		);
 
@@ -1672,14 +1730,21 @@ class cherry_data_manager_content_installer {
 
 		foreach ( $remap_options as $name => $section ) {
 
-			$values = cherry_get_option( $name );
+			$name        = explode( ':', $name );
+			$opt_name    = $name[0];
+			$opt_subname = false;
 
-			if ( ! is_string( $values ) ) {
-				continue;
+			if ( isset( $name[1] ) ) {
+				$opt_subname = $name[1];
+			}
+
+			$values = cherry_get_option( $opt_name );
+
+			if ( is_array( $values ) ) {
+				$values = $values[ $opt_subname ];
 			}
 
 			$values     = explode( ',', $values );
-
 			$new_values = $this->remap_img_ids( $values );
 
 			if ( empty( $new_values ) ) {
@@ -1688,14 +1753,13 @@ class cherry_data_manager_content_installer {
 
 			$new_values = implode( ',', $new_values );
 
-			// add new values to options array
-			if ( ! isset( $options[$section]['options-list'][$name] ) ) {
-				continue;
+			if ( false !== $opt_subname ) {
+				$options[ $section ]['options-list'][ $opt_name ][ $opt_subname ]         = $new_values;
+				$default_options[ $section ]['options-list'][ $opt_name ][ $opt_subname ] = $new_values;
+			} else {
+				$options[ $section ]['options-list'][ $opt_name ]         = $new_values;
+				$default_options[ $section ]['options-list'][ $opt_name ] = $new_values;
 			}
-
-			$options[$section]['options-list'][$name]         = $new_values;
-			$default_options[$section]['options-list'][$name] = $new_values;
-
 		}
 
 		update_option( $opt_id, $options );
@@ -1867,7 +1931,7 @@ class cherry_data_manager_content_installer {
 
 		}
 
-		unset($meta_key);
+		unset( $meta_key );
 
 	}
 
@@ -1881,7 +1945,7 @@ class cherry_data_manager_content_installer {
 		$verify = check_ajax_referer( 'cherry_data_manager_ajax', 'nonce', false );
 
 		if ( ! $verify ) {
-			exit ( 'instal_error');
+			exit ( 'instal_error' );
 		}
 	}
 
