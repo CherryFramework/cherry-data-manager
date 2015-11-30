@@ -310,6 +310,10 @@ jQuery(document).ready(function() {
 
 		event.preventDefault();
 
+		if ( ! window.confirm( window.cherry_dm_import_texts.confirm_load ) ) {
+			return ! 1;
+		}
+
 		/*if ( jQuery(this).hasClass('disabled') ) {
 			return;
 		}
@@ -337,6 +341,11 @@ jQuery(document).ready(function() {
 	// run local uploader
 	jQuery(document).on('click', '#cherry-dm-local-import', function(event) {
 		event.preventDefault();
+
+		if ( ! window.confirm( window.cherry_dm_import_texts.confirm_load ) ) {
+			return ! 1;
+		}
+
 		$import_type_selector.css('display', 'none');
 		$return_to_switcher.removeClass('hidden_');
 	});

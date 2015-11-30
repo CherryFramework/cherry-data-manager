@@ -8,7 +8,7 @@
  * Plugin Name:       Cherry Data Manager
  * Plugin URI:        http://www.cherryframework.com/
  * Description:       Import/export site content, uploads, widgets and some options
- * Version:           1.0.7
+ * Version:           1.0.8
  * Author:            Cherry Team
  * Author URI:        http://www.cherryframework.com/
  * Text Domain:       cherry-content-manager
@@ -168,7 +168,8 @@ if ( !class_exists('cherry_data_manager') ) {
 					'update_attachment'            => __( 'Updating attachments', $this->slug ),
 					'import_json'                  => __( 'Importing JSON', $this->slug ),
 					'import_complete'              => __( 'Installing content complete', $this->slug ),
-					'instal_error'                 => __( 'Installing content error', $this->slug )
+					'instal_error'                 => __( 'Installing content error', $this->slug ),
+					'confirm_load'                 => __( "ATTENTION! Installing Sample Data will overwrite your current content.\nSo we don't recommend you to install Sample Data on a live website.\n\nClick OK to proceed", $this->slug ),
 				);
 
 				wp_localize_script( $this->slug . '-importer', 'cherry_dm_import_texts', $import_texts );
