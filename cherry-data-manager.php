@@ -219,7 +219,7 @@ if ( !class_exists('cherry_data_manager') ) {
 			 *
 			 * @since 1.0.0
 			 */
-			define( 'CHERRY_DATA_MANAGER_VERSION', '1.0.7' );
+			define( 'CHERRY_DATA_MANAGER_VERSION', '1.0.8' );
 
 			/**
 			 * Set constant path to the plugin directory.
