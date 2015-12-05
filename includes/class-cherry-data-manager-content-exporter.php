@@ -38,7 +38,7 @@ class cherry_dm_content_exporter {
 		include_once( ABSPATH . '/wp-admin/includes/class-pclzip.php' );
 		require_once( ABSPATH . '/wp-admin/includes/export.php' );
 
-		add_action( 'init', array( $this, 'set_options' ) );
+		//add_action( 'init', array( $this, 'set_options' ) );
 		add_action( 'wp_ajax_cherry_data_manager_export', array( $this, 'export_handle' ) );
 
 	}
@@ -124,7 +124,9 @@ class cherry_dm_content_exporter {
 		$upload_dir      = wp_upload_dir();
 		$upload_base_dir = $upload_dir['basedir'];
 
-		$zip_name = $upload_base_dir . '/sample_data.zip';
+		$filename = apply_filters( 'cherry_data_manager_export_file_name', 'sample_data' );
+
+		$zip_name = $upload_base_dir . '/' . $filename . '.zip';
 
 		// delete sample data zip if already exist
 		$this->delete_file( $zip_name );
@@ -298,7 +300,7 @@ class cherry_dm_content_exporter {
 			}
 
 			// get only original size files (not cropped)
-			if ( !preg_match( $cropped_file_pattern, $scan_file ) ) {
+			if ( ! preg_match( $cropped_file_pattern, $scan_file ) && false === strpos( $scan_file, 'sample_data' ) ) {
 				array_push( $scan_dir_strings, $scan_file );
 			}
 
@@ -359,7 +361,15 @@ class cherry_dm_content_exporter {
 	function do_export_xml() {
 
 		ob_start();
-		export_wp();
+
+		$use_custom_export = apply_filters( 'cherry_data_manager_use_custom_export', false );
+
+		if ( $use_custom_export && function_exists( $use_custom_export ) ) {
+			call_user_func( $use_custom_export );
+		} else {
+			export_wp();
+		}
+
 		$xml = ob_get_clean();
 		$xml = iconv('utf-8', 'utf-8//IGNORE', $xml);
 		$xml = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $xml);
@@ -532,6 +542,8 @@ class cherry_dm_content_exporter {
 	 * @since 1.0.0
 	 */
 	public function prepare_options_to_export() {
+
+		$this->set_options();
 
 		$export_array = array();
 
