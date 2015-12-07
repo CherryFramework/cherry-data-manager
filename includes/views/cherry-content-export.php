@@ -32,6 +32,7 @@ global $cherry_data_manager;
 			<a id="export-content" class="button-primary_" href="#">
 				<?php _e('Export Content', $cherry_data_manager->slug); ?>
 			</a><span class="spinner"></span>
+			<?php do_action( 'cherry_data_manager_export_page_after' ); ?>
 		</div>
 	</div>
 </div>

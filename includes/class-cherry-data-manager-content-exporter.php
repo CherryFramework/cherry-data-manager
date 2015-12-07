@@ -33,6 +33,17 @@ class cherry_dm_content_exporter {
 	 */
 	public $options_ids = array();
 
+	/**
+	 * Export zip name
+	 *
+	 * @since 1.0.8
+	 * @var   null
+	 */
+	public $zip_name = null;
+
+	/**
+	 * Constructor for the class
+	 */
 	function __construct() {
 
 		include_once( ABSPATH . '/wp-admin/includes/class-pclzip.php' );
@@ -43,6 +54,9 @@ class cherry_dm_content_exporter {
 
 	}
 
+	/**
+	 * Prepare options to export
+	 */
 	public function set_options() {
 
 		$theme     = get_option( 'stylesheet' );
@@ -80,7 +94,7 @@ class cherry_dm_content_exporter {
 				$theme . '_statics',
 				$theme . '_statics_defaults',
 				$theme_opt,
-				$theme_opt_defaults
+				$theme_opt_defaults,
 			)
 		);
 
@@ -88,6 +102,28 @@ class cherry_dm_content_exporter {
 			'cherry_data_manager_options_ids',
 			array( 'page_on_front', 'page_for_posts' )
 		);
+	}
+
+	/**
+	 * Get current export ZIP name
+	 *
+	 * @since  1.0.9
+	 * @return string
+	 */
+	public function get_zip_name() {
+
+		if ( null !== $this->zip_name ) {
+			return $this->zip_name;
+		}
+
+		$upload_dir      = wp_upload_dir();
+		$upload_base_dir = $upload_dir['basedir'];
+
+		$filename = apply_filters( 'cherry_data_manager_export_file_name', 'sample_data' );
+
+		$this->zip_name = $upload_base_dir . '/' . $filename . '.zip';
+
+		return $this->zip_name;
 	}
 
 	/**
@@ -99,13 +135,13 @@ class cherry_dm_content_exporter {
 
 		global $cherry_data_manager;
 
-		if ( !current_user_can( 'export' ) ) {
+		if ( ! current_user_can( 'export' ) ) {
 			die();
 		}
 
 		$exclude_files = apply_filters(
 			'cherry_data_manager_exclude_files_from_export',
-			array('xml', 'json')
+			array( 'xml', 'json' )
 		);
 
 		$exclude_folder = apply_filters(
@@ -118,27 +154,21 @@ class cherry_dm_content_exporter {
 			'action' => 'export_content',
 			'id'     => '1',
 			'data'   => __( 'Export content done', $cherry_data_manager->slug ),
-			'file'   => ''
+			'file'   => '',
 		);
 
-		$upload_dir      = wp_upload_dir();
-		$upload_base_dir = $upload_dir['basedir'];
-
-		$filename = apply_filters( 'cherry_data_manager_export_file_name', 'sample_data' );
-
-		$zip_name = $upload_base_dir . '/' . $filename . '.zip';
+		$zip_name = $this->get_zip_name();
 
 		// delete sample data zip if already exist
 		$this->delete_file( $zip_name );
+
+		$upload_dir      = wp_upload_dir();
+		$upload_base_dir = $upload_dir['basedir'];
 
 		$this->pack_folders( $upload_base_dir );
 
 		if ( is_dir( $upload_base_dir ) ) {
 			$file_string = $this->scan_dir( $upload_base_dir, $exclude_folder, $exclude_files );
-		}
-
-		if ( empty( $file_string ) ) {
-			die();
 		}
 
 		// init zipper
@@ -156,22 +186,19 @@ class cherry_dm_content_exporter {
 		if ( is_wp_error($widgets_json_file) ) {
 			$response['data'] = "Error : " . $widgets_json_file->get_error_message();
 		} else {
-			$zip->add($widgets_json_file, PCLZIP_OPT_REMOVE_ALL_PATH);
-			$this->delete_file($widgets_json_file);
+			$this->add_export_step( $zip, $widgets_json_file, 'widgets' );
 		}
 
 		if ( is_wp_error($base_options) ) {
 			$response['data'] = "Error : " . $base_options->get_error_message();
 		} else {
-			$zip->add($base_options, PCLZIP_OPT_REMOVE_ALL_PATH);
-			$this->delete_file($base_options);
+			$this->add_export_step( $zip, $base_options, 'base_options' );
 		}
 
 		if ( is_wp_error($ids_options) ) {
 			$response['data'] = "Error : " . $ids_options->get_error_message();
 		} else {
-			$zip->add($ids_options, PCLZIP_OPT_REMOVE_ALL_PATH);
-			$this->delete_file($ids_options);
+			$this->add_export_step( $zip, $ids_options, 'ids_options' );
 		}
 
 		//export xml
@@ -180,15 +207,13 @@ class cherry_dm_content_exporter {
 		if( is_wp_error($xml_file) ) {
 			$response['data'] = "Error : " . $xml_file->get_error_message();
 		} else {
-			$zip->add($xml_file, PCLZIP_OPT_REMOVE_ALL_PATH);
-			$this->delete_file($xml_file);
+			$this->add_export_step( $zip, $xml_file, 'xml' );
 		}
 
 		// export tables
 		$tables_file = $this->export_custom_tables();
 		if ( $tables_file ) {
-			$zip->add($tables_file, PCLZIP_OPT_REMOVE_ALL_PATH);
-			$this->delete_file($tables_file);
+			$this->add_export_step( $zip, $tables_file, 'tables' );
 		}
 
 		$zip_name = $this->path_to_url( $zip_name );
@@ -204,9 +229,31 @@ class cherry_dm_content_exporter {
 	}
 
 	/**
+	 * Do another export step and passed file into zip
+	 *
+	 * @param  object $zip  zipper object.
+	 * @param  string $file filename to add.
+	 * @param  string $step current step name.
+	 * @return null|void
+	 */
+	public function add_export_step( $zip, $file, $step ) {
+
+		$skip_step = apply_filters( 'cherry_data_manager_skip_export_step', false, $step );
+
+		if ( true === $skip_step ) {
+			return true;
+		}
+
+		$zip->add( $file, PCLZIP_OPT_REMOVE_ALL_PATH );
+		$this->delete_file( $file );
+
+	}
+
+	/**
 	 * Export custom database tables to SQL
 	 *
-	 * @since 1.0.0
+	 * @since  1.0.0
+	 * @return string
 	 */
 	public function export_custom_tables() {
 
@@ -229,7 +276,7 @@ class cherry_dm_content_exporter {
 			$data      = $wpdb->get_results( "SELECT * FROM $full_name" );
 			$length    = count( $data );
 			// do not import large tables - server falls while importing if we will
-			if ( ! $data || $length > 500 ) {
+			if ( ! $data || 500 > $length ) {
 				continue;
 			}
 
@@ -257,13 +304,15 @@ class cherry_dm_content_exporter {
 	}
 
 	/**
-	 * delete selected file by path
+	 * Delete selected file by path
 	 *
 	 * @since  1.0.0
+	 * @param  string $file full path to file.
+	 * @return string
 	 */
 	public function delete_file( $file ) {
 
-		if ( is_readable($file) ){
+		if ( is_readable( $file ) ) {
 			unlink( $file );
 			return 'file deleted';
 		}
@@ -272,25 +321,36 @@ class cherry_dm_content_exporter {
 	}
 
 	/**
-	 * recursive function for grabbing all files
+	 * Recursive function for grabbing all files
 	 *
 	 * @since  1.0.0
+	 * @param  string $dir folder name to search files in.
+	 * @param  array  $exceptions_folder exclude folders from search.
+	 * @param  array  $exceptions_files exclude files from search.
+	 * @return string
 	 */
 	public function scan_dir( $dir, $exceptions_folder, $exceptions_files ) {
 
-		$exceptions_folder    = array_merge(array('.', '..'), $exceptions_folder);
-		$scand_dir            = array_diff( scandir($dir), $exceptions_folder);
+		$skip_step = apply_filters( 'cherry_data_manager_skip_export_step', false, 'images' );
+
+		if ( true === $skip_step ) {
+			return '';
+		}
+
+		$exceptions_folder    = array_merge( array( '.', '..' ), $exceptions_folder );
+		$scand_dir            = array_diff( scandir( $dir ), $exceptions_folder );
 		$scan_dir_strings     = array();
 		$extensionend_file    = "";
 		$cropped_file_pattern = '/^.+-(\d+x\d+)\..+$/';
 
-		if ( !is_array($scand_dir) ) {
-			return;
+		if ( ! is_array( $scand_dir ) ) {
+			return '';
 		}
 
 		foreach ( $scand_dir as $file ) {
+
 			$scan_file         = $dir . '/' . $file;
-			$file_extension    = explode(".", $scan_file);
+			$file_extension    = explode( '.', $scan_file );
 			$extensionend_file = end( $file_extension );
 
 			if ( is_dir( $scan_file ) ) {
@@ -299,7 +359,7 @@ class cherry_dm_content_exporter {
 				$scan_file = "";
 			}
 
-			// get only original size files (not cropped)
+			// Get only original size files (not cropped)
 			if ( ! preg_match( $cropped_file_pattern, $scan_file ) && false === strpos( $scan_file, 'sample_data' ) ) {
 				array_push( $scan_dir_strings, $scan_file );
 			}
@@ -322,7 +382,7 @@ class cherry_dm_content_exporter {
 			array( 'templates', 'cherry-style-switcher' )
 		);
 
-		foreach ( $dirs as $dir) {
+		foreach ( $dirs as $dir ) {
 			$this->pack_single_folder( $dir, $upload_base_dir );
 		}
 
@@ -331,9 +391,13 @@ class cherry_dm_content_exporter {
 	/**
 	 * Pack single dir
 	 *
-	 * @since 1.0.6
+	 * @since  1.0.6
+	 * @param  string $dir folder name to export.
+	 * @param  string $upload_base_dir base uplads dir path.
+	 * @return void|null
 	 */
 	public function pack_single_folder( $dir, $upload_base_dir ) {
+
 		$packed_dir = $upload_base_dir . '/' . $dir;
 
 		// Check if templates dir exist
@@ -341,11 +405,13 @@ class cherry_dm_content_exporter {
 			return false;
 		}
 
-		// scan dir
+		// Scan dir
 		$files = $this->scan_dir( $packed_dir, array(), array() );
-		// pack files to zip
+
+		// Pack files to zip
 		$zip_name = $upload_base_dir . '/' . $dir . '.zip';
-		// delete file if already exists
+
+		// Delete file if already exists
 		$this->delete_file( $zip_name );
 
 		$zip    = new PclZip( $zip_name );
@@ -354,9 +420,10 @@ class cherry_dm_content_exporter {
 	}
 
 	/**
-	 * export content into XML file
+	 * Export content into XML file
 	 *
-	 * @since 1.0.0
+	 * @since  1.0.0
+	 * @return string
 	 */
 	function do_export_xml() {
 
@@ -371,8 +438,8 @@ class cherry_dm_content_exporter {
 		}
 
 		$xml = ob_get_clean();
-		$xml = iconv('utf-8', 'utf-8//IGNORE', $xml);
-		$xml = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $xml);
+		$xml = iconv( 'utf-8', 'utf-8//IGNORE', $xml );
+		$xml = preg_replace( '/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $xml );
 
 		$upload_dir      = wp_upload_dir();
 		$upload_base_dir = $upload_dir['basedir'];
@@ -387,6 +454,7 @@ class cherry_dm_content_exporter {
 	 * Export widgets into JSON file
 	 *
 	 * @since  1.0.0
+	 * @return string
 	 */
 	public function do_export_widgets() {
 
@@ -400,7 +468,7 @@ class cherry_dm_content_exporter {
 			foreach ($sidebar_widget as $k) {
 				$widgets[] = array(
 					'type'       =>trim( substr( $k, 0, strrpos( $k, '-' ) ) ),
-					'type-index' =>trim( substr( $k, strrpos( $k, '-' ) + 1 ) )
+					'type-index' =>trim( substr( $k, strrpos( $k, '-' ) + 1 ) ),
 				);
 			}
 		}
@@ -411,7 +479,7 @@ class cherry_dm_content_exporter {
 
 			$widget_val                                            = get_option( 'widget_' . $widget['type'] );
 			$multiwidget_val                                       = $widget_val['_multiwidget'];
-			$widgets_array[$widget['type']][$widget['type-index']] = $widget_val[$widget['type-index']];
+			$widgets_array[$widget['type']][$widget['type-index']] = $widget_val[ $widget['type-index'] ];
 
 			if ( isset( $widgets_array[$widget['type']]['_multiwidget'] ) ) {
 				unset( $widgets_array[$widget['type']]['_multiwidget'] );
@@ -419,17 +487,23 @@ class cherry_dm_content_exporter {
 
 			$widgets_array[$widget['type']]['_multiwidget'] = $multiwidget_val;
 
-			unset($widgets_array[$widget['type']][$widget['type-index']][$themename.'_widget_rules_type_'.$widget['type'].'-'.$widget['type-index']]);
-			unset($widgets_array[$widget['type']][$widget['type-index']][$themename.'_widget_rules_'.$widget['type'].'-'.$widget['type-index']]);
-			unset($widgets_array[$widget['type']][$widget['type-index']][$themename.'_widget_custom_class_'.$widget['type'].'-'.$widget['type-index']]);
-			unset($widgets_array[$widget['type']][$widget['type-index']][$themename.'_widget_responsive_'.$widget['type'].'-'.$widget['type-index']]);
-			unset($widgets_array[$widget['type']][$widget['type-index']][$themename.'_widget_users_'.$widget['type'].'-'.$widget['type-index']]);
+			unset( $widgets_array[ $widget['type'] ][$widget['type-index'] ][ $themename . '_widget_rules_type_' . $widget['type'] . '-' . $widget['type-index'] ] );
+			unset( $widgets_array[ $widget['type'] ][ $widget['type-index'] ][ $themename . '_widget_rules_' . $widget['type'] . '-' . $widget['type-index'] ] );
+			unset( $widgets_array[ $widget['type'] ][ $widget['type-index'] ][ $themename . '_widget_custom_class_' . $widget['type'] . '-' . $widget['type-index'] ] );
+			unset( $widgets_array[ $widget['type'] ][ $widget['type-index'] ][ $themename . '_widget_responsive_' . $widget['type'] . '-' . $widget['type-index'] ] );
+			unset( $widgets_array[ $widget['type'] ][ $widget['type-index'] ][ $themename . '_widget_users_' . $widget['type'] . '-'  .$widget['type-index'] ] );
 
-			if ( isset($widgets_array[$widget['type']][$widget['type-index']]['nav_menu']) ) {
-				$term = get_term_by( 'id', $widgets_array[$widget['type']][$widget['type-index']]['nav_menu'], 'nav_menu' );
-				if ($term) {
+			if ( isset( $widgets_array[ $widget['type'] ][ $widget['type-index'] ]['nav_menu'] ) ) {
+
+				$term = get_term_by(
+					'id',
+					$widgets_array[ $widget['type'] ][ $widget['type-index'] ]['nav_menu'], 'nav_menu'
+				);
+
+				if ( $term ) {
 					$widgets_array[$widget['type']][$widget['type-index']]['nav_menu_slug'] = $term->slug;
 				}
+
 			}
 		}
 
@@ -443,22 +517,22 @@ class cherry_dm_content_exporter {
 		$responsive   = get_option( $themename . '_widget_responsive' );
 		$users        = get_option( $themename . '_widget_users' );
 
-		if ( !empty($options_type) && is_array($options_type) ) {
-			$rules_array['widget_rules_type'] = array($options_type);
+		if ( ! empty( $options_type ) && is_array( $options_type ) ) {
+			$rules_array['widget_rules_type'] = array( $options_type );
 		}
-		if ( !empty($options) && is_array($options) ) {
-			$rules_array['widget_rules'] = array($options);
+		if ( ! empty( $options ) && is_array( $options ) ) {
+			$rules_array['widget_rules'] = array( $options );
 		}
-		if ( !empty($custom_class) && is_array($custom_class) ) {
-			$rules_array['widget_custom_class'] = array($custom_class);
+		if ( ! empty( $custom_class ) && is_array( $custom_class ) ) {
+			$rules_array['widget_custom_class'] = array( $custom_class );
 		}
-		if ( !empty($responsive) && is_array($responsive) ) {
-			$rules_array['widget_responsive'] = array($responsive);
+		if ( ! empty( $responsive ) && is_array( $responsive ) ) {
+			$rules_array['widget_responsive'] = array( $responsive );
 		}
-		if ( !empty($users) && is_array($users) ) {
-			$rules_array['widget_users'] = array($users);
+		if ( ! empty( $users ) && is_array( $users ) ) {
+			$rules_array['widget_users'] = array( $users );
 		}
-		if ( !isset($rules_array)) {
+		if ( ! isset( $rules_array ) ) {
 			$rules_array = array();
 		}
 
@@ -479,7 +553,7 @@ class cherry_dm_content_exporter {
 	 * @since 1.0.0
 	 */
 	function sort_widget_array( $array ) {
-		return (!empty($array) && is_array($array));
+		return ( ! empty( $array ) && is_array( $array ) );
 	}
 
 
@@ -487,6 +561,7 @@ class cherry_dm_content_exporter {
 	 * Export options into JSON file
 	 *
 	 * @since  1.0.0
+	 * @return array
 	 */
 	public function do_export_options() {
 
@@ -494,7 +569,7 @@ class cherry_dm_content_exporter {
 		$export_array = array();
 		$rewrite_ids  = array(
 			'posts' => array(),
-			'menus' => array()
+			'menus' => array(),
 		);
 
 		// put posts(page) id's to exported array
@@ -503,7 +578,7 @@ class cherry_dm_content_exporter {
 
 		// put nav menus to exported array
 		$menus                = get_nav_menu_locations();
-		$rewrite_ids['menus'] = array_flip($menus);
+		$rewrite_ids['menus'] = array_flip( $menus );
 
 		// write all options
 		$upload_dir      = wp_upload_dir();
@@ -516,7 +591,10 @@ class cherry_dm_content_exporter {
 		$ids_json_dir = $upload_base_dir . '/rewrite-ids.json';
 		$this->export_to_json_file( $ids_json_dir, $rewrite_ids );
 
-		return array( 'options' => $json_dir, 'ids' => $ids_json_dir );
+		return array(
+			'options' => $json_dir,
+			'ids'     => $ids_json_dir,
+		);
 
 	}
 
@@ -525,21 +603,24 @@ class cherry_dm_content_exporter {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @param  string  $file  filename
-	 * @param  array   $data  array to import
+	 * @param  string $file filename.
+	 * @param  array  $data array to import.
 	 * @return void|bool false om failure
 	 */
 	function export_to_json_file( $file, $data ) {
+
 		$json = json_encode( $data );
 		$json = iconv('utf-8', 'utf-8//IGNORE', $json);
-		$json = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $json);
+		$json = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $json );
 
 		file_put_contents( $file, $json );
 	}
 
 	/**
 	 * Grab options to export into array
-	 * @since 1.0.0
+	 *
+	 * @since  1.0.0
+	 * @return array
 	 */
 	public function prepare_options_to_export() {
 
@@ -547,12 +628,12 @@ class cherry_dm_content_exporter {
 
 		$export_array = array();
 
-		if ( !is_array($this->export_options) ) {
+		if ( ! is_array( $this->export_options ) ) {
 			return $export_array;
 		}
 
 		foreach ( $this->export_options as $option ) {
-			$export_array[$option] = $val = get_option( $option );
+			$export_array[ $option ] = $val = get_option( $option );
 		}
 
 		return $export_array;
@@ -567,7 +648,7 @@ class cherry_dm_content_exporter {
 
 		$rewrite_ids = array();
 
-		if ( !is_array( $this->options_ids ) ) {
+		if ( ! is_array( $this->options_ids ) ) {
 			return $rewrite_ids;
 		}
 
@@ -575,11 +656,11 @@ class cherry_dm_content_exporter {
 
 			$val = get_option( $option );
 
-			if ( !$val ) {
+			if ( ! $val ) {
 				continue;
 			}
 
-			$rewrite_ids[$val][] = $option;
+			$rewrite_ids[ $val ][] = $option;
 		}
 
 		return $rewrite_ids;
