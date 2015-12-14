@@ -364,4 +364,27 @@ class Cherry_Data_Manager_Install_Tools {
 
 		return $id;
 	}
+
+	/**
+	 * Check if is content package installation
+	 *
+	 * @since  1.0.9
+	 * @return boolean
+	 */
+	public function is_package_install() {
+
+		if ( empty( $_SESSION['monstroid_install_type'] ) ) {
+			return false;
+		}
+
+		$type = esc_attr( $_SESSION['monstroid_install_type'] );
+
+		if ( in_array( $type, array( 'advanced', 'full' ) ) ) {
+			return false;
+		}
+
+		return true;
+
+	}
+
 }

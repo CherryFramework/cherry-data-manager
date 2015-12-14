@@ -288,13 +288,25 @@ class cherry_dm_content_importer {
 			'type' => 'error'
 		);
 
-		if ( ! isset( $_SESSION['cherry_data']['sample'] ) ) {
-			$response['message'] = __( 'Can\'t find link to sample data', $cherry_data_manager->slug );
-			ob_clean();
-			wp_send_json( $response );
-		}
+		/**
+		 * Filter sample data remote link
+		 *
+		 * @since 1.0.9
+		 * @param string $url remote sample data URL
+		 */
+		$url = apply_filters( 'cherry_data_manager_cloud_sample_data_url', false );
 
-		$url = $_SESSION['cherry_data']['sample'];
+		if ( ! $url ) {
+
+			if ( ! isset( $_SESSION['cherry_data']['sample'] ) ) {
+				$response['message'] = __( 'Can\'t find link to sample data', $cherry_data_manager->slug );
+				ob_clean();
+				wp_send_json( $response );
+			}
+
+			$url = $_SESSION['cherry_data']['sample'];
+
+		}
 
 		$res = $this->fs_connect( array( cherry_dm_get_upload_path() ) );
 

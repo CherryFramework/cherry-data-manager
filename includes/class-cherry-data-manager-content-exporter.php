@@ -275,12 +275,13 @@ class cherry_dm_content_exporter {
 			$full_name = $wpdb->prefix . $table;
 			$data      = $wpdb->get_results( "SELECT * FROM $full_name" );
 			$length    = count( $data );
+
 			// do not import large tables - server falls while importing if we will
-			if ( ! $data || 500 > $length ) {
+			if ( ! $data || 500 < $length ) {
 				continue;
 			}
 
-			$tables[$table] = $data;
+			$tables[ $table ] = $data;
 		}
 
 		$upload_dir      = wp_upload_dir();

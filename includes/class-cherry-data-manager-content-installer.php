@@ -1426,6 +1426,10 @@ class cherry_data_manager_content_installer {
 
 		do_action( 'cherry_plugin_import_json' );
 
+		if ( $this->tools->is_package_install() ) {
+			exit( 'import_end' );
+		}
+
 		$this->remap_option_ids();
 		$this->remap_slider_ids();
 
@@ -1444,7 +1448,7 @@ class cherry_data_manager_content_installer {
 		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
 
 		if ( false == $json ) {
-			exit('import_end');
+			exit( 'import_end' );
 		}
 
 		$upload_dir = wp_upload_dir();
@@ -1966,7 +1970,14 @@ class cherry_data_manager_content_installer {
 	 * @since 1.0.0
 	 */
 	public function import_end(){
+
 		wp_cache_flush();
+
+		if ( $this->tools->is_package_install() ) {
+			do_action( 'cherry_data_manager_import_end' );
+			exit('import_json');
+		}
+
 		foreach ( get_taxonomies() as $tax ) {
 			delete_option( "{$tax}_children" );
 			_get_term_hierarchy( $tax );
