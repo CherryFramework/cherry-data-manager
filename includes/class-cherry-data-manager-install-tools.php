@@ -210,6 +210,14 @@ class Cherry_Data_Manager_Install_Tools {
 			return false;
 		}
 
+		global $cherry_data_manager;
+
+		$res = $cherry_data_manager->importer->fs_connect();
+
+		if ( ! $res ) {
+			return false;
+		}
+
 		global $wp_filesystem;
 
 		if ( ! $wp_filesystem ) {
