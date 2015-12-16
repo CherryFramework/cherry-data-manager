@@ -1426,6 +1426,9 @@ class cherry_data_manager_content_installer {
 
 		do_action( 'cherry_plugin_import_json' );
 
+		$upload_dir = cherry_dm_get_upload_path();
+		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
+
 		if ( $this->tools->is_package_install() ) {
 			$this->install_complete();
 		}
@@ -1443,9 +1446,6 @@ class cherry_data_manager_content_installer {
 			$options_framework = Cherry_Options_Framework::get_instance();
 			$options_framework->restore_default_settings_array();
 		}
-
-		$upload_dir = cherry_dm_get_upload_path();
-		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
 
 		if ( false == $json ) {
 			$this->install_complete();
@@ -1466,7 +1466,7 @@ class cherry_data_manager_content_installer {
 			$json
 		);
 
-		if( is_wp_error($json) ) {
+		if( is_wp_error( $json ) ) {
 			exit('error');
 		};
 
