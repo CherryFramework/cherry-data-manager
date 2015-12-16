@@ -1427,7 +1427,7 @@ class cherry_data_manager_content_installer {
 		do_action( 'cherry_plugin_import_json' );
 
 		if ( $this->tools->is_package_install() ) {
-			exit( 'import_end' );
+			$this->install_complete();
 		}
 
 		$this->remap_option_ids();
@@ -1448,7 +1448,7 @@ class cherry_data_manager_content_installer {
 		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
 
 		if ( false == $json ) {
-			exit( 'import_end' );
+			$this->install_complete();
 		}
 
 		$upload_dir = wp_upload_dir();
@@ -1475,7 +1475,7 @@ class cherry_data_manager_content_installer {
 		$widget_data  = $json_data[1];
 
 		if ( ! is_array( $widget_data ) ) {
-			exit('import_end');
+			$this->install_complete();
 		}
 
 		foreach ( $widget_data as $widget_title => $widget_value ) {
@@ -1505,18 +1505,28 @@ class cherry_data_manager_content_installer {
 		$sidebar_data = array( array_filter( $sidebar_data ), $widget_data );
 
 		if( $this->parse_widgets_data( $sidebar_data ) ) {
-
-			/**
-			 * Hook fires after successfull demo content installation
-			 */
-			do_action( 'cherry_data_manager_install_complete' );
-
-			$this->tools->clean_files();
-
-			exit( 'import_end' );
+			$this->install_complete();
 		} else {
 			exit( 'error' );
 		}
+	}
+
+	/**
+	 * Fires install compleete hook and required functions
+	 *
+	 * @since  1.0.9
+	 * @return void
+	 */
+	public function install_complete() {
+
+		/**
+		 * Hook fires after successfull demo content installation
+		 */
+		do_action( 'cherry_data_manager_install_complete' );
+
+		$this->tools->clean_files();
+
+		exit( 'import_end' );
 	}
 
 	/**
