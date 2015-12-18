@@ -260,17 +260,17 @@ class cherry_data_manager_content_installer {
 
 		foreach ( $maybe_has_image as $key ) {
 
-			if ( empty( $data_row[$key] ) ) {
+			if ( empty( $data_row[ $key ] ) ) {
 				continue;
 			}
 
 			$json_string = preg_replace(
-				'/[\"\']http:.{4}(?!livedemo).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
+				'/[\"\']http:.{4}(?!livedemo|ld-wp).[^\'\"]*wp-content.[^\'\"]*\/(.[^\/\'\"]*\.(?:jp[e]?g|png))[\"\']/',
 				json_encode( $upload_url .'$1' ),
-				$data_row[$key]
+				$data_row[ $key ]
 			);
 
-			$data_row[$key] = $json_string;
+			$data_row[ $key ] = $json_string;
 
 		}
 
