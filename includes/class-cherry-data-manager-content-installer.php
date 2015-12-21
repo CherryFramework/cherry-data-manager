@@ -1426,8 +1426,9 @@ class cherry_data_manager_content_installer {
 
 		do_action( 'cherry_plugin_import_json' );
 
-		$upload_dir = cherry_dm_get_upload_path();
-		$json       = $this->tools->get_contents( $upload_dir . $widgets_file );
+		$widgets_file = 'widgets.json';
+		$upload_dir   = cherry_dm_get_upload_path();
+		$json         = $this->tools->get_contents( $upload_dir . $widgets_file );
 
 		if ( $this->tools->is_package_install() ) {
 			$this->install_complete();
@@ -1435,8 +1436,6 @@ class cherry_data_manager_content_installer {
 
 		$this->remap_option_ids();
 		$this->remap_slider_ids();
-
-		$widgets_file = 'widgets.json';
 
 		if ( isset($_POST['file']) && $_POST['file'] ) {
 			$widgets_file = $_POST['file'];
