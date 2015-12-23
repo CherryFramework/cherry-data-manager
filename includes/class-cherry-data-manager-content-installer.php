@@ -1525,6 +1525,10 @@ class cherry_data_manager_content_installer {
 
 		$this->tools->clean_files();
 
+		if ( isset( $_SESSION['monstroid_install_type'] ) ) {
+			unset( $_SESSION['monstroid_install_type'] );
+		}
+
 		exit( 'import_end' );
 	}
 
@@ -1539,6 +1543,12 @@ class cherry_data_manager_content_installer {
 		global $wpdb;
 
 		$table = $wpdb->prefix . 'mpsl_slides';
+
+		$table_exists = $wpdb->get_var( "SHOW TABLES LIKE '" . $table . "'" );
+
+		if ( $table !== $table_exists ) {
+			return false;
+		}
 
 		$slides = $wpdb->get_results(
 			"
